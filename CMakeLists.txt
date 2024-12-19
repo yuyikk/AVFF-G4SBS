@@ -188,6 +188,8 @@ set(G4SBS_SCRIPTS
   scripts/a1n_bigbite30deg_disgen.mac
   scripts/default_thresholds.mac
   scripts/sidis_template.mac
+  scripts/AVFF_Gen.mac
+  scripts/AVFF_Gun.mac
   )
 
 foreach(_script ${G4SBS_SCRIPTS})
