@@ -4842,8 +4842,8 @@ void G4SBSEArmBuilder::MakeAxialFF_NCal(G4LogicalVolume *motherlog)
   G4double PosX = 0;
   G4double PosY = 0;
   G4double PosZ = FrontDistToNeuArmCenter;
-  G4double SizeX_Vrt3 = ModSizeX * num_col;
-  G4double SizeY_Vrt3 = ModSizeY * num_row;
+  G4double SizeX_Vrt3 = HCalSizeX;
+  G4double SizeY_Vrt3 = HCalSizeY;
   G4Box *solidVrt3 = new G4Box("solidVrt3",
                                SizeX_Vrt3 / 2,
                                SizeY_Vrt3 / 2,
