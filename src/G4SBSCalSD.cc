@@ -131,7 +131,6 @@ void G4SBSCalSD::EndOfEvent(G4HCofThisEvent*HCE)
 {
     G4int HCID = G4SDManager::GetSDMpointer()->GetCollectionID(collectionName[0]);
     HCE->AddHitsCollection( HCID, hitCollection );
-
     //G4cout << "Adding hit collection " << collectionName[0] << " to HCE, HCID = " << HCID << G4endl;
 }
 

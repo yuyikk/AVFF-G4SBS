@@ -56,10 +56,16 @@ public:
   void MakeAxialFFNeutronArm_TOF(G4LogicalVolume *);
   void MakeAxialFFNeutronArm_Magnet(G4LogicalVolume *);
   void MakeAxialFF_NCal(G4LogicalVolume *);
-
+  void MakeAxialFFNeutronArm_TOF2(G4LogicalVolume *);
+  void MakeAxialFFNeutronArm_Magnet2(G4LogicalVolume *);
+  void MakeAxialFF_NCal2(G4LogicalVolume *);
+  void SetNArmAngle(const double &val) { fNArmAng = val; }
+  void SetNArmMagField(const G4ThreeVector &val) { fNMagField = val; }
   double fBBang;
   double fBBdist;
   double fBBCaldist;
+  double fNArmAng;
+  G4ThreeVector fNMagField;
 
   //G4SBSBigBiteField *fbbfield; //Why do we need this in both EArmBuilder and DetectorConstruction?
 

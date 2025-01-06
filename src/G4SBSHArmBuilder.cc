@@ -4104,6 +4104,21 @@ void G4SBSHArmBuilder::MakeFPP(G4LogicalVolume *Mother, G4RotationMatrix *rot, G
     AnalyzerMaterials.push_back("CH2");
 
     break;
+  case 5:
+    // setup for AVFF experiment, 8 front gems and no anlyzer
+    nana = 0;
+    ntracker = 1;
+    ngem[0] = 8;
+    GEM_z_spacing[0] = 13.2 * cm;
+    GEM_z_spacing[1] = 11.3 * cm;
+    trkr_zpos[0] = 0.0;
+    trkr_zpos[1] = 2.074 * m;
+    fGEP_CH2zpos[0] = 1.518 * m - 0.5 * fCH2thickFPP[0];
+    SDnames.push_back("Harm/FT");
+    SDnames.push_back("Harm/FPP1");
+    trkr_yoff[0] = 16.5 * cm;
+    trkr_yoff[1] = 34.1 * cm;
+    break;
   }
 
   G4VisAttributes *CH2anavisatt = new G4VisAttributes(G4Colour(0.0, 0.0, 1.0));
@@ -4180,7 +4195,7 @@ void G4SBSHArmBuilder::MakeFPP(G4LogicalVolume *Mother, G4RotationMatrix *rot, G
 
     G4ThreeVector lead_wall3_pos = G4ThreeVector(34.5 * 2.54 * cm, trkr_yoff[1] - (00.0 * cm), trkr_zpos[1] - 75.0 * cm - 7.5 * GEM_z_spacing[1]);
 
-    new G4PVPlacement(0, lead_wall3_pos, lead_wall3_log, "lead_wall3_phys", Mother, false, 0);
+    //new G4PVPlacement(0, lead_wall3_pos, lead_wall3_log, "lead_wall3_phys", Mother, false, 0);
 
     // lead_wall1 is now used as the shielding in the space between the corrector magnet and the lead wall blocking the line of sight between the beamline and the front tracker(lead_wall2)
 

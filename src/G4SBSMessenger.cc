@@ -258,7 +258,7 @@ G4SBSMessenger::G4SBSMessenger()
   beamCollimatorZUpCmd->SetParameterName("beamCollimatorZ_upstr", true);
 
   kineCmd = new G4UIcmdWithAString("/g4sbs/kine", this);
-  kineCmd->SetGuidance("Kinematics from elastic, inelastic, flat, dis, beam, sidis, wiser, gun, pythia6, simc, wapp, avffgen");
+  kineCmd->SetGuidance("Kinematics from elastic, inelastic, flat, dis, beam, sidis, wiser, gun, pythia6, simc, wapp, avffgen, avffgun");
   kineCmd->SetParameterName("kinetype", false);
 
   PYTHIAfileCmd = new G4UIcmdWithAString("/g4sbs/pythia6file", this);
@@ -266,7 +266,7 @@ G4SBSMessenger::G4SBSMessenger()
   PYTHIAfileCmd->SetParameterName("fname", false);
 
   AVFFGenfileCmd = new G4UIcmdWithAString("/g4sbs/avffgenfile", this);
-  AVFFGenfileCmd->SetGuidance("Name of ROOT file containing generator events as a ROOT tree for Axial-vector FF experiments");
+  AVFFGenfileCmd->SetGuidance("Name of ROOT file containing generator events as a ROOT tree for AVFF experiment");
   AVFFGenfileCmd->SetParameterName("fname", false);
 
   SIMCfileCmd = new G4UIcmdWithAString("/g4sbs/simcfile", this);
@@ -448,6 +448,23 @@ G4SBSMessenger::G4SBSMessenger()
   bbdistCmd = new G4UIcmdWithADoubleAndUnit("/g4sbs/bbdist", this);
   bbdistCmd->SetGuidance("BigBite distance, target to front face of magnet yoke");
   bbdistCmd->SetParameterName("dist", false);
+
+  narmangCmd = new G4UIcmdWithADoubleAndUnit("/g4sbs/narmang", this);
+  narmangCmd->SetGuidance("AVFF neutron arm angle");
+  narmangCmd->SetGuidance("default angle is -48 degree around the y axis");
+  narmangCmd->SetGuidance("default unit is 'degree'");
+  narmangCmd->SetParameterName("angle", true);
+  narmangCmd->SetDefaultValue(-48);
+  narmangCmd->SetDefaultUnit("deg");
+
+  nmagfieldCmd = new G4UIcmdWith3VectorAndUnit("/g4sbs/nmagfield", this);
+  nmagfieldCmd->SetGuidance("Set magnetic field for neutron arm magnet for AVFF experiment");
+  nmagfieldCmd->SetGuidance("Three-vector arguments are Bx, By, Bz;");
+  nmagfieldCmd->SetGuidance("default is 0, 0.5, 0");
+  nmagfieldCmd->SetGuidance("default unit is tesla");
+  nmagfieldCmd->SetParameterName("Bx", "By", "Bz", true);
+  nmagfieldCmd->SetDefaultValue(G4ThreeVector(0, 0.5, 0));
+  nmagfieldCmd->SetDefaultUnit("tesla");
 
   hcalangCmd = new G4UIcmdWithADoubleAndUnit("/g4sbs/sbsang", this);
   hcalangCmd->SetGuidance("SBS angle");
@@ -670,6 +687,7 @@ G4SBSMessenger::G4SBSMessenger()
   GEPFPPoptionCmd->SetGuidance("1 = One analyzer, 8 (FT) + 8 (FPP) GEM trackers");
   GEPFPPoptionCmd->SetGuidance("2 = Two analyzers, 6 (FT) + 5 (FPP1) + 5 (FPP2) GEM trackers (default)");
   GEPFPPoptionCmd->SetGuidance("3 = Same as 2, but with second analyzer replaced by 3.5\" steel from GEN-RP");
+  GEPFPPoptionCmd->SetGuidance("5 = No analyzer, 8 (FT) GEM trackers. This is the setup for AVFF experiment.");
   GEPFPPoptionCmd->SetParameterName("gepfppoption", true);
   GEPFPPoptionCmd->SetDefaultValue(2);
 
@@ -2107,6 +2125,16 @@ void G4SBSMessenger::SetNewValue(G4UIcommand *cmd, G4String newValue)
     }
   }
 
+  if (cmd == narmangCmd)
+  {
+    G4double v = narmangCmd->GetNewDoubleValue(newValue);
+    fdetcon->fEArmBuilder->SetNArmAngle(v);
+  }
+  if (cmd == nmagfieldCmd)
+  {
+    G4ThreeVector v = nmagfieldCmd->GetNew3VectorValue(newValue);
+    fdetcon->fEArmBuilder->SetNArmMagField(v);
+  }
   if (cmd == sbstrkrpitchCmd)
   {
     G4double v = sbstrkrpitchCmd->GetNewDoubleValue(newValue);

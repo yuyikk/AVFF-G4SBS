@@ -61,7 +61,7 @@ private:
   
   G4UIcmdWithAString   *kineCmd;
   G4UIcmdWithAString   *PYTHIAfileCmd;
-  G4UIcmdWithAString   *AVFFGenfileCmd;
+  
   G4UIcmdWithAString   *SIMCfileCmd;
   G4UIcmdWithAnInteger *FirstEventCmd;
   
@@ -71,7 +71,10 @@ private:
   G4UIcmdWithAString   *HadrCmd;
   G4UIcommand    *RejectionSamplingCmd;
 
-  
+
+  G4UIcmdWithAString   *AVFFGenfileCmd;
+  G4UIcmdWithADoubleAndUnit *narmangCmd;
+
   G4UIcmdWithAnInteger *bigfieldCmd;
   G4UIcommand *bbfieldCmd;
   //G4UIcmdWithAString *bbfield_fnameCmd; //Set filename for BB magnetic field map
@@ -330,7 +333,9 @@ private:
   G4UIcmdWithAnInteger    *NumSpinStatesTargCmd;   // Number of target spin states: positive integer = discrete number of states, 0 = randomize in all three dimensions, -1 = randomize in the plane perpendicular to the beam direction
   G4UIcommand             *TargThetaSpinCmd;       // Command to read in vector of target theta spin angles
   G4UIcommand             *TargPhiSpinCmd;         // Command to read in vector of target phi spin angles
-  
+
+  G4UIcmdWith3VectorAndUnit *nmagfieldCmd;
+
   // Command to set particle polarization for spin transport calculations:
   // ONLY relevant for particle gun generator!
   G4UIcmdWith3Vector *GunPolarizationCommand;

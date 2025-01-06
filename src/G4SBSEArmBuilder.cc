@@ -61,7 +61,9 @@ G4SBSEArmBuilder::G4SBSEArmBuilder(G4SBSDetectorConstruction *dc) : G4SBSCompone
 {
   fBBang = 40.0 * deg;
   fBBdist = 1.5 * m;
-
+  fNArmAng = -48 * deg;
+  fNMagField = G4ThreeVector(0, 0.5 * tesla, 0);
+  // fNMagField = G4ThreeVector(0, 0, 0);
   /*
   G4double frontGEM_depth = 20.*cm;
   G4double backGEM_depth = 10.*cm;
@@ -4513,7 +4515,8 @@ void G4SBSEArmBuilder::MakeAxialFFNeutronArm(G4LogicalVolume *worldlog)
   G4ThreeVector PosTarget(0, 0, 0);
   G4ThreeVector PosArm(0, 0, ArmSizeZ / 2. + 1.2 * m); // relative to target
   PosArm += PosTarget;
-  G4double RotAngle = -48 * degree;
+  G4double RotAngle = fNArmAng;
+  G4cout << "Neutron arm rotation angle: " << fNArmAng << G4endl;
   G4Box *solidArmHad = new G4Box("solidArmHad", ArmSizeX / 2, ArmSizeY / 2, ArmSizeZ / 2);
   G4LogicalVolume *logicArmHad = new G4LogicalVolume(solidArmHad, GetMaterial("Air"), "logicArmHad");
   G4ThreeVector preShift = PosArm - PosTarget;
@@ -4532,9 +4535,13 @@ void G4SBSEArmBuilder::MakeAxialFFNeutronArm(G4LogicalVolume *worldlog)
       0,
       true);
   // Define the TOF and place it into ArmHad
-  MakeAxialFFNeutronArm_Magnet(logicArmHad);
-  MakeAxialFFNeutronArm_TOF(logicArmHad);
-  MakeAxialFF_NCal(logicArmHad);
+  // MakeAxialFFNeutronArm_Magnet(logicArmHad);
+  // MakeAxialFFNeutronArm_TOF(logicArmHad);
+  // MakeAxialFF_NCal(logicArmHad);
+
+  MakeAxialFFNeutronArm_Magnet2(logicArmHad);
+  MakeAxialFFNeutronArm_TOF2(logicArmHad);
+  MakeAxialFF_NCal2(logicArmHad);
   G4VisAttributes *NeuArmVisAtt = new G4VisAttributes(G4Colour(0.19, 0.67, 1));
   NeuArmVisAtt->SetVisibility(true);
   logicArmHad->SetVisAttributes(NeuArmVisAtt);
@@ -4558,7 +4565,6 @@ void G4SBSEArmBuilder::MakeAxialFFNeutronArm_Magnet(G4LogicalVolume *motherlog)
   G4double MagPosX = 0;
   G4double MagPosY = 0;
   G4double MagPosZ = -10 * m + 0.8 * m;
-  G4ThreeVector FieldVec(0, 0.5 * tesla, 0);
 
   G4Box *box1 = new G4Box("box1", MagSizeX / 2, MagSizeY / 2, MagSizeZ / 2);
   G4Box *solidBField = new G4Box("solidBField", FieldSizeX / 2, FieldSizeY / 2, FieldSizeZ / 2);
@@ -4579,7 +4585,8 @@ void G4SBSEArmBuilder::MakeAxialFFNeutronArm_Magnet(G4LogicalVolume *motherlog)
   new G4PVPlacement(0, Vrt1Pos, logicVrt1, "physVrt1", motherlog, false, 10001, true);
 
   G4FieldManager *fieldMgr = new G4FieldManager();
-  G4UniformMagField *BField = new G4UniformMagField(FieldVec);
+  G4UniformMagField *BField = new G4UniformMagField(fNMagField);
+  G4cout << "Neutron arm magnetic field: " << fNMagField.getX() << "\t" << fNMagField.getY() << "\t" << fNMagField.getZ() << G4endl;
   fieldMgr->SetDetectorField(BField);
   G4Mag_UsualEqRhs *equationOfMotion = new G4Mag_UsualEqRhs(BField);
   G4MagIntegratorStepper *stepper = new G4ClassicalRK4(equationOfMotion); // Runge-Kutta stepper
@@ -4713,49 +4720,7 @@ void G4SBSEArmBuilder::MakeAxialFFNeutronArm_TOF(G4LogicalVolume *motherlog)
   logicTOF->SetVisAttributes(TOFVisAtt);
 }
 // HCal in neutron detection arm
-/*
-void G4SBSEArmBuilder::MakeAxialFF_NCal(G4LogicalVolume *motherlog)
-{
-  G4double DistToTarget = 15 * m;
-  G4int NofRows = 140;
-  G4int NofColumns = 1;
-  G4int NofLayers = 7;
-  G4int NofModules = NofRows * NofColumns * NofLayers;
-  G4double ModSizeX = 200 * cm;
-  G4double ModSizeY = 6 * cm;
-  G4double ModSizeZ = 6 * cm;
 
-  G4double SizeX = 200 * cm;
-  G4double SizeY = 840 * cm;
-  G4double SizeZ = ModSizeZ * NofLayers;
-
-  G4double PosX = 0;
-  G4double PosY = 0;
-  G4double PosZ = 3.8 * m + SizeZ / 2;
-  G4double SizeX_Vrt3 = 2133.6 * mm;
-  G4double SizeY_Vrt3 = 8686.8 * mm;
-  G4Box *solidVrt3 = new G4Box("solidVrt3",
-                               SizeX_Vrt3 / 2,
-                               SizeY_Vrt3 / 2,
-                               0.5 * um);
-  G4LogicalVolume *logicVrt3 = new G4LogicalVolume(solidVrt3, GetMaterial("Vacuum"), "logicVrt3");
-  G4ThreeVector Vrt3Pos(0, 0, PosZ + SizeZ / 2 + 0.5 * um);
-  new G4PVPlacement(0, Vrt3Pos, logicVrt3, "physVrt3", motherlog, false, 10003, true);
-  G4SDManager *sdman = fDetCon->fSDman;
-  G4String sdName_vrt = "Virtual3";
-  G4String collName_vrt = "Virtual3Coll";
-  if (!((G4SBSNeuArmVirtualSD *)sdman->FindSensitiveDetector(sdName_vrt)))
-  {
-    G4cout << "Adding sensitive detector for virtual detectors in neutron arm to SDman..." << G4endl;
-    G4SBSNeuArmVirtualSD *sdVrt = new G4SBSNeuArmVirtualSD(sdName_vrt, collName_vrt);
-    sdman->AddNewDetector(sdVrt);
-    (fDetCon->SDlist).insert(sdName_vrt);
-    fDetCon->SDtype[sdName_vrt] = G4SBS::kAVFF_Virtual;
-    logicVrt3->SetSensitiveDetector(sdVrt);
-  }
-} 
-*/
-///*
 void G4SBSEArmBuilder::MakeAxialFF_NCal(G4LogicalVolume *motherlog)
 {
   if (!motherlog)
@@ -4842,11 +4807,509 @@ void G4SBSEArmBuilder::MakeAxialFF_NCal(G4LogicalVolume *motherlog)
   G4double PosX = 0;
   G4double PosY = 0;
   G4double PosZ = FrontDistToNeuArmCenter;
-  G4double SizeX_Vrt3 = HCalSizeX;
-  G4double SizeY_Vrt3 = HCalSizeY;
+  G4double SizeX_Vrt3 = ModSizeX * num_col;
+  G4double SizeY_Vrt3 = ModSizeY * num_row;
   G4Box *solidVrt3 = new G4Box("solidVrt3",
-                               SizeX_Vrt3 / 2,
-                               SizeY_Vrt3 / 2,
+                               HCalSizeX / 2,
+                               HCalSizeY / 2,
+                               0.5 * um);
+  G4LogicalVolume *logicVrt3 = new G4LogicalVolume(solidVrt3, GetMaterial("Vacuum"), "logicVrt3");
+  G4ThreeVector Vrt3Pos(0, 0, PosZ + 0.5 * um);
+  new G4PVPlacement(0, Vrt3Pos, logicVrt3, "physVrt3", motherlog, false, 10003, true);
+  G4SDManager *sdman = fDetCon->fSDman;
+  G4String sdName_vrt = "Virtual3";
+  G4String collName_vrt = "Virtual3Coll";
+  if (!((G4SBSNeuArmVirtualSD *)sdman->FindSensitiveDetector(sdName_vrt)))
+  {
+    G4cout << "Adding sensitive detector for virtual detectors in neutron arm to SDman..." << G4endl;
+    G4SBSNeuArmVirtualSD *sdVrt = new G4SBSNeuArmVirtualSD(sdName_vrt, collName_vrt);
+    sdman->AddNewDetector(sdVrt);
+    (fDetCon->SDlist).insert(sdName_vrt);
+    fDetCon->SDtype[sdName_vrt] = G4SBS::kAVFF_Virtual;
+    logicVrt3->SetSensitiveDetector(sdVrt);
+  }
+  FrontDistToNeuArmCenter += 1 * um;
+  G4double HCalPosX = 0;
+  G4double HCalPosY = 0;
+  G4double HCalPosZ = FrontDistToNeuArmCenter + HCalSizeZ / 2.;
+  // Construct and place the HCal
+  G4Box *solidHCal = new G4Box("solidHCal", HCalSizeX / 2., HCalSizeY / 2., HCalSizeZ / 2.);
+
+  // Define the solid for the module container and "CAN"
+  G4Box *solidMod = new G4Box("solidMod", ModSizeX / 2., ModSizeY / 2., ModSizeZ / 2.);
+  G4Box *solidModCan0 = new G4Box("solidModCan0", ModSizeX / 2., ModSizeY / 2., ModCanSizeZ / 2.);
+  G4Box *solidModCan1 = new G4Box("solidModCan1", ModCanSizeX0 / 2., ModCanSizeY0 / 2., ModCanSizeZ / 2.);
+  G4SubtractionSolid *solidModCan = new G4SubtractionSolid("solidModCan", solidModCan0, solidModCan1, 0, G4ThreeVector(0, 0, 0));
+
+  // Define the solids for scintillator, absorber and shim gap spacer
+  G4Box *solidScint = new G4Box("solidScint", ScintSizeX / 2., ScintSizeY / 2., ScintSizeZ / 2.);
+  G4Box *solidThinAbsorb = new G4Box("solidThinAbsorb", ThinAbsorbSizeX / 2., ThinAbsorbSizeY / 2., ThinAbsorbSizeZ / 2.);
+  G4Box *solidAbsorb = new G4Box("solidAbsorb", AbsobSizeX / 2., AbsobSizeY / 2., AbsorbSizeZ / 2.);
+  G4Box *solidShimGapSpacer = new G4Box("solidShimGapSpacer", ShimGapSizeX / 2., ShimGapSizeY / 2., ShimGapSizeZ / 2.);
+
+  // Define the solid for front and back plate
+  G4Box *solidEndPlate0 = new G4Box("solidEndPlate0", EndPlate0X / 2., EndPlate0Y / 2., EndPlate0Z / 2.);
+  G4Box *solidEndPlate1 = new G4Box("solidEndPlate1", EndPlate1X / 2., EndPlate1Y / 2., EndPlate1Z / 2.);
+
+  G4UnionSolid *solidFrontPlate0 = new G4UnionSolid("solidFrontPlate0", solidEndPlate0, solidEndPlate1, 0, G4ThreeVector(0, 0, (EndPlate0Z + EndPlate1Z) / 2.));
+  G4UnionSolid *solidBackPlate0 = new G4UnionSolid("solidBackPlate0", solidEndPlate0, solidEndPlate1, 0, G4ThreeVector(0, 0, -(EndPlate0Z + EndPlate1Z) / 2.));
+  // G4LogicalVolume *logicMod = new G4LogicalVolume(solidMod, GetMaterial("Special_Air"), "logicMod");
+
+  // Define logical volumes for Sensitive modules, scintillators and absorbers and front/back plates
+  G4LogicalVolume *logicMod = new G4LogicalVolume(solidMod, GetMaterial("Special_Air"), "logicMod");
+  G4LogicalVolume *logicCan = new G4LogicalVolume(solidModCan, GetMaterial("Steel"), "logicCan");
+  G4LogicalVolume *logicScint = new G4LogicalVolume(solidScint, GetMaterial("EJ232"), "logicScint");
+  G4LogicalVolume *logicThinAbsorb = new G4LogicalVolume(solidThinAbsorb, GetMaterial("Iron"), "logicThinAbsorb");
+  G4LogicalVolume *logicAbsorb = new G4LogicalVolume(solidAbsorb, GetMaterial("Iron"), "logicAbsorb");
+  G4LogicalVolume *logicShimGapSpacer = new G4LogicalVolume(solidShimGapSpacer, GetMaterial("Air"), "logicShimGapSpacer");
+  G4LogicalVolume *logicFrontPlate = new G4LogicalVolume(solidFrontPlate0, GetMaterial("Steel"), "logicFrontPlate");
+  G4LogicalVolume *logicBackPlate = new G4LogicalVolume(solidBackPlate0, GetMaterial("Steel"), "logicBackPlate");
+
+  G4Box *solidHCalFrontPlate = new G4Box("solidHCalFrontPlate", HCalSizeX / 2., HCalSizeY / 2.,  FrontPlateSizeZ/ 2.);
+  G4LogicalVolume *logicHCalFrontPlate = new G4LogicalVolume(solidHCalFrontPlate, GetMaterial("Steel"), "logicHCalFrontPlate");
+  G4LogicalVolume *logicHCal = new G4LogicalVolume(solidHCal, GetMaterial("Air"), "logicHCal");
+
+  // Position infor for each element in a module
+  G4double posZ = -ModSizeZ / 2.;
+
+  // Position the CAN inside a module
+  posZ += EndPlate0Z + ModCanSizeZ / 2.;
+  new G4PVPlacement(0, G4ThreeVector(0, 0, posZ), logicCan, "physModCan", logicMod, false, 0, true);
+
+  posZ -= EndPlate0Z + ModCanSizeZ / 2.;
+
+  // Positon the front and back plates
+  posZ += EndPlate0Z / 2.;
+  G4double posEndOfFrontPlateZ = posZ + EndPlate0Z / 2. + EndPlate1Z;
+  new G4PVPlacement(0, G4ThreeVector(0, 0, posZ), logicFrontPlate, "physFrontPlate", logicMod, false, 0, true);
+  posZ += EndPlate0Z / 2. + ModCanSizeZ + EndPlate0Z / 2.;
+  new G4PVPlacement(0, G4ThreeVector(0, 0, posZ), logicBackPlate, "physBackPlate", logicMod, false, 0, true);
+
+  posZ = posEndOfFrontPlateZ;
+
+  int copyNo = 0;
+  G4double posLeftZ = posZ;
+  G4double posRightZ = posZ;
+
+  G4double posScintX = ScintSizeX / 2.;
+  G4double posScintY = 0;
+  G4double posAbsorbX = AbsobSizeX / 2.;
+  G4double posAbsorbY = 0;
+
+  G4ThreeVector posLeft(-posAbsorbX, posAbsorbY, posLeftZ);
+  G4ThreeVector posRight(posAbsorbX, posAbsorbY, posRightZ);
+
+  // Rotation matrix for thw wrapped scintillators on both siddes
+  G4RotationMatrix rotLeft, rotRight;
+  rotLeft.rotateZ(180 * degree);
+
+  const G4int numSubStacks = 3;
+  G4int numPairs[numSubStacks] = {13, 14, 13};
+  for (int sub = 0; sub < numSubStacks; ++sub)
+  {
+    for (int pair = 0; pair < numPairs[sub]; ++pair)
+    {
+      // The first pair usually doesn't start with an absorber
+      // except for the first substack
+      if (sub == 0 && pair == 0)
+      {
+        posLeftZ += ThinAbsorbSizeZ / 2.;
+        posRightZ += AbsorbSizeZ / 2.;
+        posLeft.setZ(posLeftZ);
+        posRight.setZ(posRightZ);
+        new G4PVPlacement(0, posLeft, logicThinAbsorb, "physThinAbsorb", logicMod, false, copyNo++, true);
+        new G4PVPlacement(0, posRight, logicAbsorb, "physAbsorb", logicMod, false, copyNo++, true);
+        posRightZ += AbsorbSizeZ / 2. + ThinAbsorbSizeZ / 2.;
+        posRight.setZ(posRightZ);
+        new G4PVPlacement(0, posRight, logicThinAbsorb, "physThinAbsorb", logicMod, false, copyNo++, true);
+        posLeftZ += ThinAbsorbSizeZ / 2.;
+        posRightZ += ThinAbsorbSizeZ / 2.;
+      }
+      else if (pair > 0)
+      {
+        // Position a absorber in front of every other pair after the first
+        posLeftZ += AbsorbSizeZ / 2.;
+        posRightZ += AbsorbSizeZ / 2.;
+        posLeft.setZ(posLeftZ);
+        posRight.setZ(posRightZ);
+        new G4PVPlacement(0, posLeft, logicAbsorb, "physAbsorb", logicMod, false, copyNo++, true);
+        new G4PVPlacement(0, posRight, logicAbsorb, "physAbsorb", logicMod, false, copyNo++, true);
+        posLeftZ += AbsorbSizeZ / 2.;
+        posRightZ += AbsorbSizeZ / 2.;
+      }
+      // Set the scintillator
+      posLeftZ += ScintSizeZ / 2.;
+      posRightZ += ScintSizeZ / 2.;
+      posLeft.setZ(posLeftZ);
+      posRight.setZ(posRightZ);
+      new G4PVPlacement(G4Transform3D(rotLeft, posLeft), logicScint, "physScint", logicMod, false, copyNo++, true);
+      new G4PVPlacement(G4Transform3D(rotRight, posRight), logicScint, "physScint", logicMod, false, copyNo++, true);
+      posLeftZ += ScintSizeZ / 2.;
+      posRightZ += ScintSizeZ / 2.;
+    }
+    // A spacer (or shim gap) is at the end of each substack but
+    // before the last rib.
+    posLeftZ += ShimGapSizeZ / 2.;
+    posRightZ += ShimGapSizeZ / 2.;
+    posLeft.setZ(posLeftZ);
+    posRight.setZ(posRightZ);
+    new G4PVPlacement(0, posLeft, logicShimGapSpacer, "physShimGapSpacer", logicMod, false, copyNo++, true);
+    new G4PVPlacement(0, posRight, logicShimGapSpacer, "physShimGapSpacer", logicMod, false, copyNo++, true);
+    posLeftZ += ShimGapSizeZ / 2.;
+    posRightZ += ShimGapSizeZ / 2.;
+
+    // Place a "rib" at the end of each substack
+    posLeftZ += AbsorbSizeZ / 2.;
+    posRightZ += AbsorbSizeZ / 2.;
+    posLeft.setZ(posLeftZ);
+    posRight.setZ(posRightZ);
+    new G4PVPlacement(0, posLeft, logicAbsorb, "physAbsorb", logicMod, false, copyNo++, true);
+    new G4PVPlacement(0, posRight, logicAbsorb, "physAbsorb", logicMod, false, copyNo++, true);
+    posLeftZ += AbsorbSizeZ / 2.;
+    posRightZ += AbsorbSizeZ / 2.;
+  }
+  // G4SDManager *sdman = fDetCon->fSDman;
+  G4String NCalScintSDName = "NCalScint";
+  G4String NCalScintCollName = "NCalScintHitsCollection";
+  G4SBSCalSD *NCalScintSD = NULL;
+  if (!((G4SBSCalSD *)sdman->FindSensitiveDetector(NCalScintSDName)))
+  {
+    G4cout << "Adding NCal Scintillator Sensitive Detector to SDman..." << G4endl;
+    NCalScintSD = new G4SBSCalSD(NCalScintSDName, NCalScintCollName);
+    sdman->AddNewDetector(NCalScintSD);
+    (fDetCon->SDlist).insert(NCalScintSDName);
+    fDetCon->SDtype[NCalScintSDName] = G4SBS::kAVFF_NCal;
+    (NCalScintSD->detmap).depth = 1;
+    G4int default_ntbins = 25;
+    fDetCon->SetThresholdTimeWindowAndNTimeBins(NCalScintSDName, 0 * MeV, 500 * ns, default_ntbins);
+    logicScint->SetSensitiveDetector(NCalScintSD);
+  }
+  fDetCon->InsertSDboundaryVolume(logicHCal->GetName(), NCalScintSDName);
+
+  G4String NCalAbsorbSDName = "NCalAbsorb";
+  G4String NCalAbsorbCollName = "NCalAbsorbHitsCollection";
+  G4SBSCalSD *NCalAbsorbSD = NULL;
+  if (!((G4SBSCalSD *)sdman->FindSensitiveDetector(NCalAbsorbSDName)))
+  {
+    G4cout << "Adding NCal Absorber Sensitive Detector to SDman..." << G4endl;
+    NCalAbsorbSD = new G4SBSCalSD(NCalAbsorbSDName, NCalAbsorbCollName);
+    sdman->AddNewDetector(NCalAbsorbSD);
+    (fDetCon->SDlist).insert(NCalAbsorbSDName);
+    fDetCon->SDtype[NCalAbsorbSDName] = G4SBS::kAVFF_NCal;
+    (NCalAbsorbSD->detmap).depth = 1;
+    G4int default_ntbins = 25;
+    fDetCon->SetThresholdTimeWindowAndNTimeBins(NCalAbsorbSDName, 0 * MeV, 500 * ns, default_ntbins);
+    logicAbsorb->SetSensitiveDetector(NCalAbsorbSD);
+    logicThinAbsorb->SetSensitiveDetector(NCalAbsorbSD);
+  }
+  
+  fDetCon->InsertSDboundaryVolume(logicHCal->GetName(), NCalAbsorbSDName);
+
+  new G4PVPlacement(0, G4ThreeVector(0, 0, -(HCalSizeZ - FrontPlateSizeZ) / 2.), logicHCalFrontPlate, "physHCalFrontPlate", logicHCal, false, 0, true);
+  ofstream mapfile("database/NCal_map.txt");
+  TString currentline;
+  currentline.Form("# %15s, %15s, %15s, %18s, %18s",
+                   "Cell", "Row", "Column", "Xcenter (cm)", "Ycenter (cm)");
+  mapfile << currentline << endl;
+
+  // Set the initial vertical position for a module as the top of HCAL
+  // Initial horizontal position would be on the left
+  G4double ModPosX;
+  G4double ModPosY = (HCalSizeY - ModSizeY) / 2.;
+  G4double ModPosZ = FrontPlateSizeZ / 2.;
+  // G4double ExternalShimPosZ =
+  copyNo = 0;
+  for (int row = 0; row < num_row; ++row)
+  {
+    ModPosX = (HCalSizeX - ModSizeX) / 2.;
+    for (int col = 0; col < num_col; ++col)
+    {
+      new G4PVPlacement(0, G4ThreeVector(ModPosX, ModPosY, ModPosZ), logicMod, "physMod", logicHCal, false, copyNo, true);
+      currentline.Form("  %15d, %15d, %15d, %18.3f, %18.3f",
+                       copyNo, row, col, ModPosX / cm, ModPosY / cm);
+     
+      mapfile << currentline << endl;
+      
+      (NCalScintSD->detmap).Row[copyNo] = row;
+      (NCalScintSD->detmap).Col[copyNo] = col;
+      (NCalScintSD->detmap).LocalCoord[copyNo] = G4ThreeVector(ModPosX, ModPosY, ModPosZ);
+
+      (NCalAbsorbSD->detmap).Row[copyNo] = row;
+      (NCalAbsorbSD->detmap).Col[copyNo] = col;
+      (NCalAbsorbSD->detmap).LocalCoord[copyNo] = G4ThreeVector(ModPosX, ModPosY, ModPosZ);
+      ModPosX -= ModCToCX;
+      copyNo++;
+    }
+    // Externel Shim is not added now. Yi Yu 2024-11-21
+    ModPosY -= ModCToCY;
+  }
+  mapfile.close();
+
+  // place the NCal volume
+  new G4PVPlacement(0, G4ThreeVector(HCalPosX, HCalPosY, HCalPosZ), logicHCal, "physHCal", motherlog, false, 0, true);
+
+  // G4String sdName_vrt = "Virtual3";
+  // G4String collName_vrt = "Virtual3Coll";
+  // if (!((G4SBSNeuArmVirtualSD *)sdman->FindSensitiveDetector(sdName_vrt)))
+  // {
+  //   G4cout << "Adding sensitive detector for virtual detectors in neutron arm to SDman..." << G4endl;
+  //   G4SBSNeuArmVirtualSD *sdVrt = new G4SBSNeuArmVirtualSD(sdName_vrt, collName_vrt);
+  //   sdman->AddNewDetector(sdVrt);
+  //   (fDetCon->SDlist).insert(sdName_vrt);
+  //   fDetCon->SDtype[sdName_vrt] = G4SBS::kAVFF_Virtual;
+  //   logVir3->SetSensitiveDetector(sdVrt);
+  // }
+}
+//*/
+
+
+void G4SBSEArmBuilder::MakeAxialFFNeutronArm_Magnet2(G4LogicalVolume *motherlog)
+{
+  if (!motherlog)
+  {
+    G4cerr << "G4SBSEArmBuilder::MakeAxialFFNeutronArm_Magnet(). Mother logical volume is not valid, line " << __LINE__ << G4endl;
+    exit(1);
+  }
+  // Build Magnet
+  G4double DistToTarget = 1.5 * m;
+  G4double FieldSizeX = 53.5 * cm;
+  G4double FieldSizeY = 224 * cm;
+  G4double FieldSizeZ = 200 * cm;
+  G4double WallThickness = 50 * cm;
+  G4double MagSizeX = WallThickness * 2 + FieldSizeX;
+  G4double MagSizeY = WallThickness * 2 + FieldSizeY;
+  G4double MagSizeZ = FieldSizeZ;
+  G4double MagPosX = 0;
+  G4double MagPosY = 0;
+  G4double MagPosZ = -10 * m + 1.8 * m;
+
+  G4Box *box1 = new G4Box("box1", MagSizeX / 2, MagSizeY / 2, MagSizeZ / 2);
+  G4Box *solidBField = new G4Box("solidBField", FieldSizeX / 2, FieldSizeY / 2, FieldSizeZ / 2);
+  G4SubtractionSolid *solidMagnetShell = new G4SubtractionSolid("solidMagnetShell", box1, solidBField);
+  G4LogicalVolume *logicMagnetShell = new G4LogicalVolume(solidMagnetShell, GetMaterial("Iron"), "logicMagnetShell");
+  G4LogicalVolume *logicBField = new G4LogicalVolume(solidBField, GetMaterial("Air"), "logicBField");
+  auto userLimits = new G4UserLimits(0.01 * m);
+  logicBField->SetUserLimits(userLimits);
+  G4ThreeVector MagnetPos = G4ThreeVector(MagPosX, MagPosY, MagPosZ);
+  new G4PVPlacement(0, MagnetPos, logicMagnetShell, "physMagnetShell", motherlog, false, 0, true);
+  new G4PVPlacement(0, MagnetPos, logicBField, "physBField", motherlog, false, 0, true);
+
+  // Place a virtual detector in front of the magnet
+  // G4Box *solidVrt1 = new G4Box("solidVrt1", MyMagnet::kSizeX / 2, MyMagnet::kSizeY / 2, 0.5 * um);
+  G4Box *solidVrt1 = new G4Box("solidVrt1", FieldSizeX / 2, FieldSizeY / 2, 0.5 * um);
+  G4LogicalVolume *logicVrt1 = new G4LogicalVolume(solidVrt1, GetMaterial("Vacuum"), "logicVrt1");
+  G4ThreeVector Vrt1Pos = G4ThreeVector(MagPosX, MagPosY, MagPosZ - MagSizeZ / 2 - 0.5 * um);
+  new G4PVPlacement(0, Vrt1Pos, logicVrt1, "physVrt1", motherlog, false, 10001, true);
+
+  G4FieldManager *fieldMgr = new G4FieldManager();
+  G4UniformMagField *BField = new G4UniformMagField(fNMagField);
+  G4cout << "Neutron arm magnetic field: " << fNMagField.getX() << "\t" << fNMagField.getY() << "\t" << fNMagField.getZ() << G4endl;
+  fieldMgr->SetDetectorField(BField);
+  G4Mag_UsualEqRhs *equationOfMotion = new G4Mag_UsualEqRhs(BField);
+  G4MagIntegratorStepper *stepper = new G4ClassicalRK4(equationOfMotion); // Runge-Kutta stepper
+  G4ChordFinder *chordFinder = new G4ChordFinder(BField, 1e-2 * mm, stepper);
+
+  fieldMgr->SetChordFinder(chordFinder);
+  logicBField->SetFieldManager(fieldMgr, true);
+
+  G4SDManager *sdman = fDetCon->fSDman;
+  G4String sdName_vrt = "Virtual1";
+  G4String collName_vrt = "Virtual1Coll";
+  if (!((G4SBSNeuArmVirtualSD *)sdman->FindSensitiveDetector(sdName_vrt)))
+  {
+    G4cout << "Adding sensitive detector for virtual detectors in neutron arm to SDman..." << G4endl;
+    G4SBSNeuArmVirtualSD *sdVrt = new G4SBSNeuArmVirtualSD(sdName_vrt, collName_vrt);
+    sdman->AddNewDetector(sdVrt);
+    (fDetCon->SDlist).insert(sdName_vrt);
+    fDetCon->SDtype[sdName_vrt] = G4SBS::kAVFF_Virtual;
+    logicVrt1->SetSensitiveDetector(sdVrt);
+  }
+}
+// Neutron arm TOF
+void G4SBSEArmBuilder::MakeAxialFFNeutronArm_TOF2(G4LogicalVolume *motherlog)
+{
+  if (!motherlog)
+  {
+    G4cerr << "G4SBSEArmBuilder::MakeAxialFFNeutronArm_TOF. Mother logical volume is not valid, line " << __LINE__ << G4endl;
+    exit(1);
+  }
+  G4int NofRows = 140;
+  G4int NofColumns = 1;
+  G4int NofLayers = 11;
+  G4int NofModules = NofRows * NofColumns * NofLayers;
+  G4double ModSizeX = 200 * cm;
+  G4double ModSizeY = 6 * cm;
+  G4double ModSizeZ = 6 * cm;
+
+  G4double SizeX = 200 * cm;
+  G4double SizeY = 840 * cm;
+  G4double SizeZ = ModSizeZ * NofLayers;
+
+  G4double PosX = 0;
+  G4double PosY = 0;
+  G4double PosZ = 3.8 * m + SizeZ / 2;
+  G4Box *solidTOF = new G4Box("solidTOF",
+                              SizeX / 2,
+                              SizeY / 2,
+                              SizeZ / 2);
+  G4LogicalVolume *logicTOF = new G4LogicalVolume(solidTOF, GetMaterial("Air"), "logicTOF");
+  G4ThreeVector TOFPos(PosX, PosY, PosZ);
+  G4VPhysicalVolume *physTOF = new G4PVPlacement(
+      0, TOFPos, logicTOF, "physTOF", motherlog, false, 0, true);
+
+  G4Box *solidTOFModule = new G4Box("solidTOFModule",
+                                    ModSizeX / 2,
+                                    ModSizeY / 2,
+                                    ModSizeZ / 2);
+  G4LogicalVolume *logicTOFModule = new G4LogicalVolume(solidTOFModule, GetMaterial("BC408"), "logicTOFModule");
+  // G4Box *solidIronPlate = new G4Box("solidIronPlate", MyTOF::kIronSizeX / 2, MyTOF::kIronSizeY / 2, MyTOF::kIronSizeZ / 2);
+  // G4LogicalVolume *logicIronPlate = new G4LogicalVolume(solidIronPlate, Iron, "logicIronPlate");
+  G4int copyN = 0;
+  G4int nIron = 0;
+  G4double x0 = 0;
+  G4double y0 = -SizeY / 2 + ModSizeY / 2;
+  G4double z0 = -SizeZ / 2 + ModSizeZ / 2;
+  G4double dx = ModSizeX;
+  G4double dy = ModSizeY;
+  // G4double dz = MyTOF::kIronSizeZ + MyTOF::kModSizeZ;
+  G4double dz = ModSizeZ;
+
+  // Placing TOF modules
+  for (int ilay = 0; ilay < NofLayers; ++ilay)
+  {
+    for (int icol = 0; icol < NofColumns; ++icol)
+    {
+      for (int irow = 0; irow < NofRows; ++irow)
+      {
+        G4double x = x0 + icol * dx;
+        G4double y = y0 + irow * dy;
+        G4double z = z0 + ilay * dz;
+        G4ThreeVector pos(x, y, z);
+        new G4PVPlacement(0, pos, logicTOFModule, "physTOFModule", logicTOF, false, copyN, true);
+        copyN++;
+      }
+    }
+  }
+  // Place a virtual detector in front of the TOF
+  G4Box *solidVrt2 = new G4Box("solidVrt2",
+                               SizeX / 2,
+                               SizeY / 2,
+                               0.5 * um);
+  G4LogicalVolume *logicVrt2 = new G4LogicalVolume(solidVrt2, GetMaterial("Vacuum"), "logicVrt2");
+  G4ThreeVector Vrt2Pos(PosX, PosY, PosZ - SizeZ / 2 - 0.5 * um);
+  new G4PVPlacement(0, Vrt2Pos, logicVrt2, "physVrt2", motherlog, false, 10002, true);
+
+  // Adding Sensitive detector
+  G4SDManager *sdman = fDetCon->fSDman;
+  G4String sdName_vrt = "Virtual2";
+  G4String collName_vrt = "Virtual2Coll";
+  if (!((G4SBSNeuArmVirtualSD *)sdman->FindSensitiveDetector(sdName_vrt)))
+  {
+    G4cout << "Adding sensitive detector for virtual detectors in neutron arm to SDman..." << G4endl;
+    G4SBSNeuArmVirtualSD *sdVrt = new G4SBSNeuArmVirtualSD(sdName_vrt, collName_vrt);
+    sdman->AddNewDetector(sdVrt);
+    (fDetCon->SDlist).insert(sdName_vrt);
+    fDetCon->SDtype[sdName_vrt] = G4SBS::kAVFF_Virtual;
+    logicVrt2->SetSensitiveDetector(sdVrt);
+  }
+
+
+
+  G4String sdName_tof = "TOF";
+  G4String collName_tof = "NeuArmTOFColl";
+  if (!((G4SBSNeuArmTOFSD *)sdman->FindSensitiveDetector(sdName_tof)))
+  {
+    G4cout << "Adding sensitive detector for TOF in neutron arm to SDman..." << G4endl;
+    G4SBSNeuArmTOFSD *sdTOF = new G4SBSNeuArmTOFSD(sdName_tof, collName_tof);
+    sdman->AddNewDetector(sdTOF);
+    (fDetCon->SDlist).insert(sdName_tof);
+    fDetCon->SDtype[sdName_tof] = G4SBS::kAVFF_TOF;
+    logicTOFModule->SetSensitiveDetector(sdTOF);
+  }
+  G4VisAttributes *TOFModuleVisAtt = new G4VisAttributes(G4Colour(0.19, 0.67, 1));
+  TOFModuleVisAtt->SetVisibility(true);
+  // TOFModuleVisAtt->SetForceSolid(true);
+  logicTOFModule->SetVisAttributes(TOFModuleVisAtt);
+
+  G4VisAttributes *TOFVisAtt = new G4VisAttributes(G4Colour(0.19, 0.67, 1));
+  TOFVisAtt->SetVisibility(false);
+  logicTOF->SetVisAttributes(TOFVisAtt);
+}
+// HCal in neutron detection arm
+
+void G4SBSEArmBuilder::MakeAxialFF_NCal2(G4LogicalVolume *motherlog)
+{
+  if (!motherlog)
+  {
+    G4cerr << "G4SBSEArmBuilder::MakeAxialFFNeutronArm_HCal. Mother logical volume is not valid, line " << __LINE__ << G4endl;
+    exit(1);
+  }
+  G4cout << "Constructing NCal..." << G4endl;
+  
+  // 3.8m: front plane of TOF to the center of Neutron arm logic
+  // 66cm: thickness of 11 layers of TOF
+  // 50cm: shift of NCal front plane to TOF back plane 
+  G4double FrontDistToNeuArmCenter = 3.8 * m + 66 * cm + 50 * cm;
+  // Construct HCal module
+  
+  // Dimentions about Module
+  G4double ModSizeX = 152.40 * mm;
+  G4double ModSizeY = 152.40 * mm;
+  G4double ModSizeZ = 1555.70 * mm;
+  // Dimentions about Module container
+  G4double ModCanSizeZ = 1238.00 * mm;
+  G4double ModCanThickX = 2 * 1.4478 * mm;
+  G4double ModCanThickY = 1.4478 * mm;
+  G4double ModCanSizeX0 = ModSizeX - ModCanThickX;
+  G4double ModCanSizeY0 = ModSizeY - ModCanThickY;
+  G4double ModCToCX = 154.94 * mm;
+  G4double ModCToCY = 158.75 * mm;
+  // G4double ModCToCZ = 0;
+  // Dimentions about Absobers
+  // I modified the X-Y size of Aborber and Shim gap space.
+  // Let them match the X-Y size of scintillator as in the current stage
+  // components for example optical ones are not needed.
+  // The commented values at the end of each modified lines are the original values
+  G4double ThinAbsorbSizeX = 69.35 * mm;  // 69.60 * mm;
+  G4double ThinAbsorbSizeY = 147.00 * mm; // 148.80 * mm;
+  G4double ThinAbsorbSizeZ = 6.35 * mm;
+  G4double AbsobSizeX = 69.35 * mm;  // 69.60 * mm;
+  G4double AbsobSizeY = 147.00 * mm; // 148.80 * mm;
+  G4double AbsorbSizeZ = 12.70 * mm;
+  // Dimentions about Scintillators
+  G4double ScintSizeX = 69.35 * mm;
+  G4double ScintSizeY = 147.00 * mm;
+  G4double ScintSizeZ = 9.90 * mm;
+  // Dimentions about Shim gap spacers
+  G4double ShimGapSizeX = 69.35 * mm;  // 69.60 * mm;
+  G4double ShimGapSizeY = 147.00 * mm; // 148.80 * mm;
+  G4double ShimGapSizeZ = 4.00 * mm;
+
+  // Dimentions of front and back plate
+  G4double EndPlate0X = ModSizeX;
+  G4double EndPlate0Y = ModSizeY;
+  G4double EndPlate0Z = 6.35 * mm;
+  G4double EndPlate1X = 149.35 * mm;
+  G4double EndPlate1Y = 149.35 * mm;
+  G4double EndPlate1Z = 12.7 * mm;
+  G4double EndPlateZ = EndPlate0Z + EndPlate1Z;
+  G4double FrontPlateSizeZ = 19.05 * mm;
+  G4int num_row = 57;
+  G4int num_col = 14;
+  G4double HCalSizeX = (num_col - 1) * ModCToCX + ModSizeY;
+  G4double HCalSizeY = (num_row - 1) * ModCToCY + ModSizeY;
+  G4double HCalSizeZ = ModSizeZ + FrontPlateSizeZ;
+
+
+  // place a virtual plane in front of the NCal
+  G4double PosX = 0;
+  G4double PosY = 0;
+  G4double PosZ = FrontDistToNeuArmCenter;
+  G4double SizeX_Vrt3 = ModSizeX * num_col;
+  G4double SizeY_Vrt3 = ModSizeY * num_row;
+  G4Box *solidVrt3 = new G4Box("solidVrt3",
+                               HCalSizeX / 2,
+                               HCalSizeY / 2,
                                0.5 * um);
   G4LogicalVolume *logicVrt3 = new G4LogicalVolume(solidVrt3, GetMaterial("Vacuum"), "logicVrt3");
   G4ThreeVector Vrt3Pos(0, 0, PosZ + 0.5 * um);
