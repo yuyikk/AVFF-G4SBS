@@ -29,7 +29,7 @@ class G4SBSNeuArmTOFoutput
         std::vector<float> fOutX;
         std::vector<float> fOutY;
         std::vector<float> fOutZ;
-        std::array<float, 980> fModuleEdep;
+        std::array<float, 1540> fModuleEdep;
         float fTotalEdep;
 };
 #endif
