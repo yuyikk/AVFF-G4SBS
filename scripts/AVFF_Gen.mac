@@ -2,30 +2,15 @@
 
 ## Configure Experiment
 /g4sbs/exp             avff
-#/g4sbs/exp             gep
 
-## Configure the target
-/g4sbs/target          LH2
-/g4sbs/targlen         30.0 cm           ## Target Length
 
 ## Configure generator settings
-#/g4sbs/kine            elastic           ## Generator
-#/g4sbs/kine            pythia6
 /g4sbs/kine             avffgen          ## read event from generator root tree
-/g4sbs/runtime         1.0 s
-/g4sbs/beamcur         50.0 microampere
-/g4sbs/rasterx         4.0 mm
-/g4sbs/rastery         4.0 mm
-/g4sbs/beamE           6.4 GeV
-/g4sbs/thmin           22.0 deg
-/g4sbs/thmax           35.0 deg
-/g4sbs/phmin           -35.0 deg
-/g4sbs/phmax           35.0 deg
 
 ## Configure standard detector settings
 /g4sbs/gemres          0.070 mm
-/g4sbs/hcaldist        10.0 m
-/g4sbs/hcalvoffset     75.0 cm
+/g4sbs/hcaldist        6.0 m
+/g4sbs/hcalvoffset     0.0 cm
 /g4sbs/sbsclampopt     2
 
 ## Configure the magnets
@@ -37,8 +22,6 @@
 # assume 2.4 T*m / 1.22 m = 1.97 Tesla
 #/g4sbs/sbsmagfield     1.97 tesla
 #/g4sbs/48d48field      1
-/g4sbs/bbang           29.8 deg
-/g4sbs/bbdist          9.5 m
 /g4sbs/sbsang          30 deg
 /g4sbs/48D48dist       1.6 m
 
@@ -50,21 +33,19 @@
 #/g4sbs/keepsdtrackinfo Harm/HCalScint true
 
 # FPP configuration options:
-# option 1: single-analyzer, 8+8 front and back trackers:
-/g4sbs/gepfppoption 1
+/g4sbs/gepfppoption 5
 /g4sbs/FPP1CH2thick 55.88 cm
 
-# option 2: double-analyzer (both CH2)
-#/g4sbs/gepfppoption 2
-#/g4sbs/FPP1CH2thick 55.88 cm
-#/g4sbs/FPP2CH2thick 55.88 cm
+## specify the genetator input files
+## this command can be invoked many times
+## all root files specified with this command will
+## be linked together and processed
+/g4sbs/avffgenfile YOUR_GENERATOR_ROOT_FILE
 
-# option 3: double-analyzer, first analyzer CH2, second analyz
-#/g4sbs/gepfppoption 3
-#/g4sbs/FPP1CH2thick 55 cm
-#/g4sbs/FPP2CH2thick
-
-#/g4sbs/pythia6file data/protontarget_job1.root
-/g4sbs/avffgenfile data/AVFF_CO_1_2199_Theta_40_90_10M_e-_AVFF.root
-## Run 100 events
+## Run 10000 events
+## make sure the events used here is no less than
+## the total number of events of all genetator files 
+## specified with '/g4sbs/avffgenfile' if you want to process
+## all the events, otherwise only the first N events(the number you give)
+## will be processed
 /g4sbs/run             10000
