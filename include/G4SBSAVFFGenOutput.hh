@@ -6,7 +6,7 @@ class G4SBSAVFFGenOutput
     public:
         G4SBSAVFFGenOutput();
         ~G4SBSAVFFGenOutput();
-        void ConvertToTreeUnits();
+        void ConvertUnits();
         void Clear();
         float fWeight;
         std::vector<int> fPdgID;

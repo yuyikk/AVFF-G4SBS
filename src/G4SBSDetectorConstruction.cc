@@ -19,6 +19,7 @@
 #include "G4VisAttributes.hh"
 #include "G4Colour.hh"
 #include "G4RotationMatrix.hh"
+#include "G4GDMLParser.hh"
 
 #include "G4MagneticField.hh"
 #include "G4SBSGlobalField.hh"
@@ -2499,6 +2500,9 @@ void G4SBSDetectorConstruction::ConstructMaterials()
   BC408->GetIonisation()->SetBirksConstant(0.126 * mm / MeV);
 
   fMaterialsMap["BC408"] = BC408;
+
+  G4Material *Tungsten = man->FindOrBuildMaterial("G4_W");
+  fMaterialsMap["G4_W"] = Tungsten;
 }
 
 G4Material *G4SBSDetectorConstruction::GetMaterial(G4String name)
@@ -2679,6 +2683,9 @@ G4VPhysicalVolume *G4SBSDetectorConstruction::ConstructAll()
   // Returns the pointer to
   // the physical world:
   //-----------------------
+  // G4GDMLParser parser;
+  // parser.Write("geometry.gdml", WorldPhys);
+  return WorldPhys;
   return WorldPhys;
 }
 

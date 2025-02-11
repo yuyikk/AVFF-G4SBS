@@ -39,7 +39,7 @@ void G4SBSBeamlineBuilder::BuildComponent(G4LogicalVolume *worldlog)
 {
 
   // double beamheight = 10.0 * 12 * 2.54 * cm; // 10 feet off the ground
-  double beamheight = 4.55 * m; // beam height for AVFF exp
+  double beamheight = 5 * m; // beam height for AVFF exp
 
   // EFuchey 2017/03/29: organized better this with a switch instead of an endless chain of if...  else...
   switch (fDetCon->fExpType)

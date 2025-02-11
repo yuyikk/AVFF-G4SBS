@@ -52,13 +52,12 @@ public:
 
   void MakeHallCGEM(G4LogicalVolume *);
 
-  void MakeAxialFFNeutronArm(G4LogicalVolume *);
-  void MakeAxialFFNeutronArm_TOF(G4LogicalVolume *);
-  void MakeAxialFFNeutronArm_Magnet(G4LogicalVolume *);
-  void MakeAxialFF_NCal(G4LogicalVolume *);
-  void MakeAxialFFNeutronArm_TOF2(G4LogicalVolume *);
-  void MakeAxialFFNeutronArm_Magnet2(G4LogicalVolume *);
-  void MakeAxialFF_NCal2(G4LogicalVolume *);
+  void MakeAVFFNArm(G4LogicalVolume *);
+  void MakeAVFFTOF(G4LogicalVolume *);
+  void MakeAVFFNMagnet(G4LogicalVolume *);
+  void MakeAVFFNMagnet2(G4LogicalVolume *);
+  void MakeAVFFNCal(G4LogicalVolume *);
+  void MakeLeadBlocks(G4LogicalVolume *);
   void SetNArmAngle(const double &val) { fNArmAng = val; }
   void SetNArmMagField(const G4ThreeVector &val) { fNMagField = val; }
   double fBBang;

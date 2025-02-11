@@ -576,7 +576,7 @@ void G4SBSHArmBuilder::Make48D48(G4LogicalVolume *worldlog, double r48d48)
   G4LogicalVolume *big48d48Log = new G4LogicalVolume(big48d48_wslot, GetMaterial("Fer"),
                                                      "b48d48Log", 0, 0, 0);
 
-  G4VisAttributes *magnet_visatt = new G4VisAttributes(G4Colour(0.75, 0.75, 0.75));
+  G4VisAttributes *magnet_visatt = new G4VisAttributes(G4Colour(1 - 0.75, 1- 0.75, 1 - 0.75));
   big48d48Log->SetVisAttributes(magnet_visatt);
 
   if (fDetCon->fTotalAbs)
@@ -627,7 +627,7 @@ void G4SBSHArmBuilder::Make48D48(G4LogicalVolume *worldlog, double r48d48)
     new G4PVPlacement(bigboxrm, G4ThreeVector(-r_req * sin(a_req), 0.0, r_req * cos(a_req)),
                       dgapshld_log, "big48d48Physical", worldlog, 0, false, 0);
 
-    G4VisAttributes *Leadcolor = new G4VisAttributes(G4Colour(0.4, 0.4, 0.4));
+    G4VisAttributes *Leadcolor = new G4VisAttributes(G4Colour(0.25, 0.25, 0.25));
     dgapshld_log->SetVisAttributes(Leadcolor);
   }
 
@@ -893,7 +893,7 @@ void G4SBSHArmBuilder::MakeSBSFieldClamps(G4LogicalVolume *motherlog)
                         backclampLog, "backclampPhysical", motherlog, 0, false, 0);
     }
 
-    G4VisAttributes *clampVisAtt = new G4VisAttributes(G4Colour(0.8, 1.0, 0.4));
+    G4VisAttributes *clampVisAtt = new G4VisAttributes(G4Colour(0.14, 0.55, 0.14));
 
     frontclampLog->SetVisAttributes(clampVisAtt);
     frontextfaceLog->SetVisAttributes(clampVisAtt);
@@ -944,7 +944,7 @@ void G4SBSHArmBuilder::MakeSBSFieldClamps(G4LogicalVolume *motherlog)
                       G4ThreeVector(-FrontClamp_r * sin(f48D48ang) + FrontClamp_xoffset * cos(f48D48ang), 0.0, FrontClamp_r * cos(f48D48ang) + FrontClamp_xoffset * sin(f48D48ang)),
                       FrontClamp_log, "FrontClamp_phys", motherlog, false, 0, false);
 
-    G4VisAttributes *clampVisAtt = new G4VisAttributes(G4Colour(0.8, 1.0, 0.4));
+    G4VisAttributes *clampVisAtt = new G4VisAttributes(G4Colour(0.14, 0.55, 0.14));
 
     FrontClamp_log->SetVisAttributes(clampVisAtt);
 
@@ -1891,12 +1891,12 @@ void G4SBSHArmBuilder::MakeHCALV2(G4LogicalVolume *motherlog,
   log_ModuleMylar->SetVisAttributes(G4VisAttributes::GetInvisible());
 
   // Absorber
-  G4VisAttributes *vis_Absorb = new G4VisAttributes(G4Colour(0.83, 0.84, 0.85));
+  G4VisAttributes *vis_Absorb = new G4VisAttributes(G4Colour(1 - 0.83, 1 - 0.84, 1 - 0.85));
   log_Absorb->SetVisAttributes(vis_Absorb);
   log_ThinAbsorb->SetVisAttributes(vis_Absorb);
 
   // Scintillator and Mylar
-  G4VisAttributes *vis_Scint = new G4VisAttributes(G4Colour(0.0, 1.0, 1.0, trans));
+  G4VisAttributes *vis_Scint = new G4VisAttributes(G4Color::Cyan());
   log_Scint->SetVisAttributes(vis_Scint);
 
   // Wavelength Shifter & Rod
@@ -1906,22 +1906,22 @@ void G4SBSHArmBuilder::MakeHCALV2(G4LogicalVolume *motherlog,
   log_WaveShiftRod->SetVisAttributes(vis_WaveShiftRod);
 
   // LightGuide
-  G4VisAttributes *vis_LightGuide = new G4VisAttributes(G4Colour(1.0, 1.0, 1.0, trans));
+  G4VisAttributes *vis_LightGuide = new G4VisAttributes(G4Colour(1-1.0, 1-1.0, 1.0, trans));
   log_LightGuide->SetVisAttributes(vis_LightGuide);
 
   // PMTCathode
-  G4VisAttributes *vis_PMTCathode = new G4VisAttributes(G4Colour(1.0, .41, 71));
+  G4VisAttributes *vis_PMTCathode = new G4VisAttributes(G4Colour(1.0, 1-.41, 1-.71));
   log_PMTCathode->SetVisAttributes(vis_PMTCathode);
 
   // FrontPl & BackPl
-  G4VisAttributes *vis_FrontPl = new G4VisAttributes(G4Colour(0.3, 0.3, 0.3));
+  G4VisAttributes *vis_FrontPl = new G4VisAttributes(G4Colour(1-0.3, 1-0.3, 1-0.3));
   log_FrontPl->SetVisAttributes(vis_FrontPl);
-  G4VisAttributes *vis_BackPl = new G4VisAttributes(G4Colour(0.3, 0.3, 0.3));
+  G4VisAttributes *vis_BackPl = new G4VisAttributes(G4Colour(1-0.3, 1-0.3, 1-0.3));
   log_BackPl->SetVisAttributes(vis_BackPl);
 
   // Shim Gap Spacer
   G4VisAttributes *vis_ShimGapSpacer = new G4VisAttributes(
-      G4Colour(1.0, 1.0, 0.0));
+      G4Colour(1- 1.0, 1 - 1.0, 1 - 0.0));
   log_ShimGapSpacer->SetVisAttributes(vis_ShimGapSpacer);
 
   // FrontPlate (steel mounting plate)
@@ -4209,6 +4209,12 @@ void G4SBSHArmBuilder::MakeFPP(G4LogicalVolume *Mother, G4RotationMatrix *rot, G
 
     new G4PVPlacement(rot_lead_wall, lead_wall1_pos, lead_wall1_log, "lead_wall1_phys", Mother, false, 0);
 
+    G4VisAttributes *lead_wall_vis = new G4VisAttributes(G4Color::Black());
+    lead_wall_vis->SetForceSolid();
+    lead_wall_vis->SetVisibility(true);
+    lead_wall1_log->SetVisAttributes(lead_wall_vis);
+    lead_wall2_log->SetVisAttributes(lead_wall_vis);
+    lead_wall3_log->SetVisAttributes(lead_wall_vis);
     //}
   }
   // int ntracker = 3; //FT, FPP1, FPP2

@@ -60,7 +60,7 @@ void G4SBSGlobalField::SetInvertField(G4bool b) {
 
 
 
-void G4SBSGlobalField::AddField( G4SBSMagneticField *f ){ 
+void G4SBSGlobalField::AddField( G4SBSMagneticField *f){ 
   f->InvertField(fInverted);
   fFields.push_back(f); 
 

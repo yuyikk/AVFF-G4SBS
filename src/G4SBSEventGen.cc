@@ -2689,6 +2689,9 @@ bool G4SBSEventGen::GenerateAVFFGen()
   for (int i = 0; i < nPart; ++i)
   {
     fAVFFGenEvent.fPdgID.push_back(fAVFFEventGenTree->GetPdgID(i));
+    // The energy unit used in external generator tree is GeV
+    // Geant4 default energy unit is MeV
+    // Now Convert GeV to MeV
     fAVFFGenEvent.fPx.push_back(fAVFFEventGenTree->GetPx(i) * GeV);
     fAVFFGenEvent.fPy.push_back(fAVFFEventGenTree->GetPy(i) * GeV);
     fAVFFGenEvent.fPz.push_back(fAVFFEventGenTree->GetPz(i) * GeV);

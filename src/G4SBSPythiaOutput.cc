@@ -53,35 +53,35 @@ void G4SBSPythiaOutput::Clear(){
 }
 
 void G4SBSPythiaOutput::ConvertToTreeUnits(){ //This is called once per event after primary vertices are generated. When this is called, all quantities should be in GEANT4 standard units of MeV, ns, cm;
-  Ebeam /= GeV;
-  Eprime /= GeV;
-  px_e /= GeV;
-  py_e /= GeV;
-  pz_e /= GeV;
-  vx_e /= m;
-  vy_e /= m;
-  vz_e /= m;
-  Egamma /= GeV;
-  px_gamma /= GeV;
-  py_gamma /= GeV;
-  pz_gamma /= GeV;
-  vx_gamma /= m;
-  vy_gamma /= m;
-  vz_gamma /= m;
-  Q2 /= (GeV*GeV);
-  W2 /= (GeV*GeV);
+  Ebeam /= MeV;
+  Eprime /= MeV;
+  px_e /= MeV;
+  py_e /= MeV;
+  pz_e /= MeV;
+  vx_e /= cm;
+  vy_e /= cm;
+  vz_e /= cm;
+  Egamma /= MeV;
+  px_gamma /= MeV;
+  py_gamma /= MeV;
+  pz_gamma /= MeV;
+  vx_gamma /= cm;
+  vy_gamma /= cm;
+  vz_gamma /= cm;
+  Q2 /= (MeV*MeV);
+  W2 /= (MeV*MeV);
 
   for( int i=0; i<Nprimaries; i++ ){
-    Px[i] /= GeV;
-    Py[i] /= GeV;
-    Pz[i] /= GeV;
-    M[i] /= GeV;
-    E[i] /= GeV;
-    P[i] /= GeV;
+    Px[i] /= MeV;
+    Py[i] /= MeV;
+    Pz[i] /= MeV;
+    M[i] /= MeV;
+    E[i] /= MeV;
+    P[i] /= MeV;
     t[i] /= ns;
-    vx[i] /= m;
-    vy[i] /= m;
-    vz[i] /= m;
+    vx[i] /= cm;
+    vy[i] /= cm;
+    vz[i] /= cm;
   }
 
 }

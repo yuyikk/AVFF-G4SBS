@@ -20,11 +20,11 @@ void G4SBSAVFFGenOutput::Clear()
     fPy.clear();
     fPz.clear();
 }
-void G4SBSAVFFGenOutput::ConvertToTreeUnits()
+void G4SBSAVFFGenOutput::ConvertUnits()
 {
-    fVx /= mm;
-    fVy /= mm;
-    fVz /= mm;
+    fVx /= cm;
+    fVy /= cm;
+    fVz /= cm;
     for (unsigned int i = 0; i < fPx.size(); ++i)
     {
         fPx.at(i) /= MeV;

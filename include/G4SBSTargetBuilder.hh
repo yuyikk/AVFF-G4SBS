@@ -61,10 +61,10 @@ public:
   void BuildGEnTarget_Collimator_C(G4LogicalVolume *motherLog,G4double z0=0); 
   void BuildGEnTarget_Collimator_Table(G4LogicalVolume *motherLog,G4double z0=0);
 
-  // Axial FF LH2 target (Added at Oct, 2024 by Yi Yu)
-  void BuildAxialFFTarget(G4LogicalVolume *motherLog);
-  void BuildAxialFFTarget_Collimator(G4LogicalVolume *motherLog);
-
+  // AVFF LH2 target (Added at Oct, 2024 by Yi Yu)
+  void BuildAVFFTarget(G4LogicalVolume *motherLog);
+  void BuildAVFFCollimator(G4LogicalVolume *motherLog);
+  
   // test items 
   void BuildGEnTarget_IonChamber(G4LogicalVolume *motherLog);
   void BuildGEnTarget_BeamCollimator(G4LogicalVolume *motherLog,int type=0); // default is downstream  

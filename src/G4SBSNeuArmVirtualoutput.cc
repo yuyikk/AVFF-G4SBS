@@ -26,3 +26,20 @@ void G4SBSNeuArmVirtualoutput::Clear()
     fVy.clear();
     fVz.clear();
 }
+
+void G4SBSNeuArmVirtualoutput::ConvertUnits()
+{
+    for (unsigned int i = 0; i < fX.size(); ++i)
+    {
+        fX.at(i) /= CLHEP::cm;
+        fY.at(i) /= CLHEP::cm;
+        fZ.at(i) /= CLHEP::cm;
+        fPx.at(i) /= CLHEP::MeV;
+        fPy.at(i) /= CLHEP::MeV;
+        fPz.at(i) /= CLHEP::MeV;
+        fTime.at(i) /= CLHEP::ns;
+        fVx.at(i) /= CLHEP::cm;
+        fVy.at(i) /= CLHEP::cm;
+        fVz.at(i) /= CLHEP::cm;
+    }
+}

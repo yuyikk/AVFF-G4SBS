@@ -15,6 +15,7 @@
 #include "G4SBSNeuArmVirtualSD.hh"
 #include "G4SBSEArmBuilder.hh"
 #include "G4SBSHArmBuilder.hh"
+#include "G4SBSAVFFConstants.hh"
 // #include "G4SDManager.hh"
 #include <assert.h>
 #include "sbstypes.hh"
@@ -1286,7 +1287,7 @@ void G4SBSIO::BranchNeuArmTOF(G4String SDname)
   fTree->Branch(branch_name.Format("%s.HitGlobalTime", branch_prefix.Data()), &(NeuArmTOFData[SDname].fTime));
   fTree->Branch(branch_name.Format("%s.HitEdep", branch_prefix.Data()), &(NeuArmTOFData[SDname].fEdep));
   fTree->Branch(branch_name.Format("%s.TrackLength", branch_prefix.Data()), &(NeuArmTOFData[SDname].fTrackL));
-  fTree->Branch(branch_name.Format("%s.ModuleEdep", branch_prefix.Data()), NeuArmTOFData[SDname].fModuleEdep.data(), branch_name.Format("%s.ModuleEdep[980]/F", branch_prefix.Data()));
+  fTree->Branch(branch_name.Format("%s.ModuleEdep", branch_prefix.Data()), NeuArmTOFData[SDname].fModuleEdep.data(), branch_name.Format("%s.ModuleEdep[%d]/F", branch_prefix.Data(), MyTOF::kNofModules));
   fTree->Branch(branch_name.Format("%s.TotalEdep", branch_prefix.Data()), &(NeuArmTOFData[SDname].fTotalEdep), branch_name.Format("%s.TotalEdep/F", branch_prefix.Data()));
 }
 

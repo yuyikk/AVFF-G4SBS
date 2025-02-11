@@ -7,6 +7,7 @@ class G4SBSNeuArmVirtualoutput
     public:
         G4SBSNeuArmVirtualoutput();
         ~G4SBSNeuArmVirtualoutput();
+        void ConvertUnits();
         void Clear();
         std::vector<short> fPID;
         std::vector<short> fTID;

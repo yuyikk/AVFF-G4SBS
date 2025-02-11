@@ -17,6 +17,7 @@
 #include "TVector3.h"
 
 #include "G4SBSAVFFGenOutput.hh"
+#include "G4SBSAVFFConstants.hh"
 
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
@@ -108,7 +109,7 @@ void G4SBSPrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
       particleGun->SetParticlePosition(vertex);
       particleGun->GeneratePrimaryVertex(anEvent);
     }
-    // GenEvent.ConvertToTreeUnits();
+    GenEvent.ConvertUnits();
     fIO->SetG4SBSAVFFGenOutput(GenEvent);
     return;
   }
@@ -500,7 +501,7 @@ G4ParticleGun *G4SBSPrimaryGeneratorAction::GetParticleGun()
 
 void G4SBSPrimaryGeneratorAction::SetAVFFGun()
 {
-  G4ThreeVector pos(0, 0, -15 * cm);
+  G4ThreeVector pos(0, 0, -(MyTarget::kLengthContainer + 10 * cm));
   G4ParticleTable *partTable = G4ParticleTable::GetParticleTable();
     // G4cout << partTable->size() << G4endl;
     /*for (int i = 0; i < partTable->size(); ++i)

@@ -2,12 +2,13 @@
 #define G4SBSNeuArmTOFoutput_hh 1
 #include <vector>
 #include <array>
-
+#include "G4SBSAVFFConstants.hh"
 class G4SBSNeuArmTOFoutput
 {
     public:
         G4SBSNeuArmTOFoutput();
         ~G4SBSNeuArmTOFoutput();
+        void ConvertUnits();
         void Clear();
         std::vector<short> fPID;
         std::vector<short> fTID;
@@ -29,7 +30,7 @@ class G4SBSNeuArmTOFoutput
         std::vector<float> fOutX;
         std::vector<float> fOutY;
         std::vector<float> fOutZ;
-        std::array<float, 1540> fModuleEdep;
+        std::array<float, MyTOF::kNofModules> fModuleEdep;
         float fTotalEdep;
 };
 #endif

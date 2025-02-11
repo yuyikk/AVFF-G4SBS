@@ -1,5 +1,5 @@
-#define _L_UNIT CLHEP::m
-#define _E_UNIT CLHEP::GeV
+#define _L_UNIT CLHEP::cm
+#define _E_UNIT CLHEP::MeV
 #define _T_UNIT CLHEP::ns
 
 #include "TMatrix.h"
@@ -498,6 +498,8 @@ void G4SBSEventAction::EndOfEventAction(const G4Event *evt)
         if (NeuArmTOFHC != NULL)
         {
           FillNeuArmTOFData(NeuArmTOFHC, neu_tof);
+          // This can only be called once, otherwise you will get wrong values
+          neu_tof.ConvertUnits();
           fIO->SetNeuArmTOFData(*d, neu_tof);
           anyhits = (anyhits || NeuArmTOFHC->entries() > 0);
         }
@@ -511,6 +513,8 @@ void G4SBSEventAction::EndOfEventAction(const G4Event *evt)
         if (NeuArmVirtualHC != NULL)
         {
           FillNeuArmVirtualData(NeuArmVirtualHC, neu_vir);
+          // This can only be called once, otherwise you will get wrong values
+          neu_vir.ConvertUnits();
           fIO->SetNeuArmVirtualData(*d, neu_vir);
           anyhits = (anyhits || NeuArmVirtualHC->entries() > 0);
         }
@@ -2840,6 +2844,8 @@ void G4SBSEventAction::FillNeuArmTOFData(G4SBSNeuArmTOFHitsCollection *hc, G4SBS
     out.fVy.push_back(hit->GetVertexXYZ().getY());
     out.fVz.push_back(hit->GetVertexXYZ().getZ());
     out.fTime.push_back(hit->GetTime());
+    out.fTrackL.push_back(hit->GetTrackLength());
+    out.fEdep.push_back(hit->GetEdep());
     out.fModuleEdep.at(hit->GetDetectorID()) += hit->GetEdep();
     out.fTotalEdep += hit->GetEdep();
   }
