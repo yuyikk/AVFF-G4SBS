@@ -34,8 +34,8 @@ namespace MyTarget
 {
     constexpr G4double kRadiusContainer = 2.54 * cm; // 2 inches in diameter
     constexpr G4double kRadiusTarget = kRadiusContainer - 0.25 * mm;
-    constexpr G4double kLengthContainer = 20 * cm + 0.3 * mm;
-    constexpr G4double kLengthTarget = 20 * cm;
+    constexpr G4double kLengthTarget = 40 * cm;
+    constexpr G4double kLengthContainer = kLengthTarget + 0.3 * mm;
     constexpr G4double kPosX = 0;
     constexpr G4double kPosY = 0;
     constexpr G4double kPosZ = 0;
@@ -46,7 +46,7 @@ namespace MyCollimator
     constexpr G4double kThickness = 25 * cm;
     constexpr G4double kOuterR = kInnerR + kThickness;
     constexpr G4double kConeAngle = 96 * deg;
-    constexpr G4double kLength = 15 * cm;
+    constexpr G4double kLength = 20 * cm;
 }
 namespace MyNeuArm // the arm for hadron detection
 {
@@ -91,10 +91,10 @@ namespace MyMagnet
 namespace MyMagnet2
 {
     // distance to the target
-    constexpr G4double kCtoTarget = 3 * m;
+    constexpr G4double kCtoTarget = 3 * m; 
     constexpr G4double kPosX = 0;
     constexpr G4double kPosY = 0;
-    constexpr G4double kPosZ = -7 * m;
+    constexpr G4double kPosZ = -8.2 * m; // relative to the center of neutron arm logical volume
     constexpr G4double kFieldSizeZ = 2 * m;
     constexpr G4double kFieldSizeX = (kCtoTarget + kFieldSizeZ / 2) * MyTOF::kSizeX / (15. * m);
     constexpr G4double kFieldSizeY = (kCtoTarget + kFieldSizeZ / 2) * MyTOF::kSizeY / (15. * m);
@@ -118,9 +118,11 @@ namespace MyMagnet2
 }
 namespace MyLeadBlock // the arm for lepton detection
 {
-    constexpr G4double kThickness= 40 * m;
+    constexpr G4double kThickness= 80 * cm;
+    constexpr G4double kThickness2 = 80 * cm;
     constexpr G4double kHeight = 1 * m;
-    constexpr G4double kUpperEdge = 40 * cm;
+    constexpr G4double kUpperEdgeSize = 40 * cm;
+    constexpr G4double kDistToBeam = 28 * cm;
 }
 namespace MyHCal
 {

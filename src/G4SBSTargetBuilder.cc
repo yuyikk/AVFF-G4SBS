@@ -6983,8 +6983,10 @@ void G4SBSTargetBuilder::BuildAVFFCollimator(G4LogicalVolume *motherLog)
   G4LogicalVolume *logicCollimator = new G4LogicalVolume(solidCollimator_Sub, Tungsten, "logicCollimator");
   G4RotationMatrix *rotation = new G4RotationMatrix();
   rotation->rotateX(180 * deg);
-  G4double DistToTargetZ = 0.5 * (MyTarget::kLengthContainer + totallength - 2 * coneHeight - 10 * cm);
-  G4ThreeVector collPos = G4ThreeVector(MyTarget::kPosX, MyTarget::kPosY, MyTarget::kPosZ - DistToTargetZ);
+  // 10 cm long target is without collimation
+  // 5 cm for each collimator 
+  G4double DistToTargetZ =  coneHeight - 5 * cm - 0.5 * totallength; // the center of the tub solidCollimator
+  G4ThreeVector collPos = G4ThreeVector(MyTarget::kPosX, MyTarget::kPosY, MyTarget::kPosZ + DistToTargetZ);
   new G4PVPlacement(rotation, collPos, logicCollimator, "physCollimator", motherLog, false, 0, true);
 
   G4Tubs *solid_tmp2 = new G4Tubs("solid_tmp2", MyCollimator::kInnerR, MyCollimator::kOuterR, (totallength - coneHeight) / 2., -90 * deg, CLHEP::pi);
@@ -6992,7 +6994,7 @@ void G4SBSTargetBuilder::BuildAVFFCollimator(G4LogicalVolume *motherLog)
   G4ThreeVector unionPos(0, 0, (totallength) / 2.);
   G4UnionSolid *solidCollimator2 = new G4UnionSolid("solidCollimator2", solid_tmp2, solidCone_Sub, nullptr, unionPos);
   G4LogicalVolume *logicCollimator2 = new G4LogicalVolume(solidCollimator2, Tungsten, "logicCollimator2");
-  DistToTargetZ = 5 * cm + (coneHeight + totallength) / 2.;
+  DistToTargetZ = 5 * cm + (coneHeight + totallength) / 2.; // the center of the tub solid_tmp2
   G4ThreeVector collPos2 = G4ThreeVector(MyTarget::kPosX, MyTarget::kPosY, MyTarget::kPosZ + DistToTargetZ);
   new G4PVPlacement(rotation, collPos2, logicCollimator2, "physCollimator2", motherLog, false, 0, true);
 
