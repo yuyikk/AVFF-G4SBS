@@ -28,6 +28,7 @@
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SBSAVFFConstants.hh"
+#include <cmath>
 
 G4SBSTargetBuilder::G4SBSTargetBuilder(G4SBSDetectorConstruction *dc) : G4SBSComponent(dc)
 {
@@ -6987,6 +6988,7 @@ void G4SBSTargetBuilder::BuildAVFFCollimator(G4LogicalVolume *motherLog)
   // 5 cm for each collimator 
   G4double DistToTargetZ =  coneHeight - 5 * cm - 0.5 * totallength; // the center of the tub solidCollimator
   G4ThreeVector collPos = G4ThreeVector(MyTarget::kPosX, MyTarget::kPosY, MyTarget::kPosZ + DistToTargetZ);
+  // now place the upstream collimator
   new G4PVPlacement(rotation, collPos, logicCollimator, "physCollimator", motherLog, false, 0, true);
 
   G4Tubs *solid_tmp2 = new G4Tubs("solid_tmp2", MyCollimator::kInnerR, MyCollimator::kOuterR, (totallength - coneHeight) / 2., -90 * deg, CLHEP::pi);
@@ -6996,8 +6998,34 @@ void G4SBSTargetBuilder::BuildAVFFCollimator(G4LogicalVolume *motherLog)
   G4LogicalVolume *logicCollimator2 = new G4LogicalVolume(solidCollimator2, Tungsten, "logicCollimator2");
   DistToTargetZ = 5 * cm + (coneHeight + totallength) / 2.; // the center of the tub solid_tmp2
   G4ThreeVector collPos2 = G4ThreeVector(MyTarget::kPosX, MyTarget::kPosY, MyTarget::kPosZ + DistToTargetZ);
+  // now place the down-stream collimator
   new G4PVPlacement(rotation, collPos2, logicCollimator2, "physCollimator2", motherLog, false, 0, true);
 
+  // make and place the center collimator
+  // calculate the opening angle (in degree) of the center collimator 
+  // to the window of magnet field at neutron arm
+  G4double openangle = std::atan(0.5 * MyMagnet2::kFieldSizeY / (MyMagnet2::kPosZ - MyTarget::kPosZ - MyMagnet2::kFieldSizeZ / 2.)) / CLHEP::pi * 180. * deg;
+  G4Tubs *solidTubs1 = new G4Tubs("solidTubs1", MyCollimator::kInnerR, MyCollimator::kOuterR, 5 * cm, openangle, 90 * deg - openangle);
+  G4Tubs *solidTubs2 = new G4Tubs("solidTubs2", MyCollimator::kInnerR, MyCollimator::kOuterR, 5 * cm, -90 * deg, 90 * deg - openangle); 
+  G4Cons *solidCons1 = new G4Cons("solidCons1", MyCollimator::kInnerR, MyCollimator::kInnerR, MyCollimator::kInnerR, MyCollimator::kOuterR, coneHeight / 2, openangle, 90 * deg - openangle);
+  G4Cons *solidCons2 = new G4Cons("solidCons2", MyCollimator::kInnerR, MyCollimator::kInnerR, MyCollimator::kInnerR, MyCollimator::kOuterR, coneHeight / 2, -90 * deg, 90 * deg - openangle);
+  
+  // now add tow tubs and two cons together
+  G4UnionSolid *solidTubs_Union = new G4UnionSolid("solidTubs_Union", solidTubs1, solidTubs2);
+  G4UnionSolid *solidCons_Union = new G4UnionSolid("solidCons_Union", solidCons1, solidCons2);
+
+  // now add  combined tubs and cons
+  G4ThreeVector shift1(0, 0, -5 * cm - coneHeight / 2.);
+  G4UnionSolid *solidCollimator3 = new G4UnionSolid("solidCollimator3", solidTubs_Union, solidCons_Union, nullptr, shift1);
+
+  // now subtract solidCons_Union from solidCollimator3
+  G4ThreeVector shift2(0, 0, 5 * cm - coneHeight / 2.);
+  G4SubtractionSolid *solidCollimator3_Sub = new G4SubtractionSolid("solidCollimator3_Sub", solidCollimator3, solidCons_Union, nullptr, shift2);
+
+  // now place it at the center of the target
+  G4LogicalVolume *logicCollimator3 = new G4LogicalVolume(solidCollimator3_Sub, Tungsten, "logicCollimator3");
+  G4ThreeVector collPos3 = G4ThreeVector(MyTarget::kPosX, MyTarget::kPosY, MyTarget::kPosZ + coneHeight);
+  new G4PVPlacement(nullptr, collPos3, logicCollimator3, "physCollimator3", motherLog, false, 0, true);
   // new G4PVPlacement(rotation, G4ThreeVector(0, 0, 300 * cm), logicCollimator2, "physCollimator2", motherlog, false, 0, true);
 
   // G4LogicalVolume *logicCone = new G4LogicalVolume(solidCone_Sub, Tungsten, "logicCone");
@@ -7011,6 +7039,11 @@ void G4SBSTargetBuilder::BuildAVFFCollimator(G4LogicalVolume *motherLog)
   CollimatorVisAtt->SetForceSolid(true);
   logicCollimator->SetVisAttributes(CollimatorVisAtt);
   logicCollimator2->SetVisAttributes(CollimatorVisAtt);
+
+  G4VisAttributes *CollimatorVisAtt2 = new G4VisAttributes(G4Colour::Green());
+  CollimatorVisAtt2->SetVisibility(true);
+  CollimatorVisAtt2->SetForceSolid(true);
+  logicCollimator3->SetVisAttributes(CollimatorVisAtt2);
   // logicTmp2->SetVisAttributes(CollimatorVisAtt);
   // logicCone->SetVisAttributes(CollimatorVisAtt);
 }
