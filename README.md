@@ -22,12 +22,16 @@ cd ./exe/run_g4sbs_here
 source ../bin/g4sbs.sh
 g4sbs mac/AVFF_Gun.mac 
 ```
+Modify the line `/g4sbs/filename   avff_gen.root` of `AVFF_Gun.mac` to change the output file name
+
+Modify the line `/g4sbs/run   10000` of `AVFF_Gun.mac` to change the number of events to be simulated
+ 
 ### 2. generator files as input of geant4 simulation
-Please modify the `mac/AVFF_Gun.mac` and replace 'YOUR_GENERATOR_ROOT_FILE' with your input generator file
+Please modify the `mac/AVFF_Gen.mac` and replace 'YOUR_GENERATOR_ROOT_FILE' with your input generator file
 ```bash
 cd ./exe/run_g4sbs_here
 source ../bin/g4sbs.sh
-g4sbs mac/AVFF_Gun.mac 
+g4sbs mac/AVFF_Gen.mac 
 ```
 
 ## About TTree Branches
