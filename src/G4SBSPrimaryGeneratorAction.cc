@@ -501,31 +501,59 @@ G4ParticleGun *G4SBSPrimaryGeneratorAction::GetParticleGun()
 
 void G4SBSPrimaryGeneratorAction::SetAVFFGun()
 {
-  G4ThreeVector pos(0, 0, -(MyTarget::kLengthContainer + 10 * cm));
+
   G4ParticleTable *partTable = G4ParticleTable::GetParticleTable();
-    // G4cout << partTable->size() << G4endl;
-    /*for (int i = 0; i < partTable->size(); ++i)
-    {
-        G4cout << partTable->GetParticleName(i) << "\t" << partTable->GetParticle(i)->GetPDGEncoding() << G4endl;
-    }*/
-    // G4String partName = "proton";
-    // G4String partName = "neutron";
-    G4String partName = "e-";
-    GunParticleType = partTable->FindParticle(partName);
-    
-    G4double mass = GunParticleType->GetPDGMass();
-    // G4cout << "mass: " << mass << G4endl;
-    
-    // G4ThreeVector pos(0, 0.5 * m, 0.3 * m);
-    G4ThreeVector direction(0, 0, 1);
-    
-    G4double KineticE = 2.2 * GeV - mass;
-    // G4cout << "KineticE: " << KineticE << G4endl;
-    // KineticE = 80 * MeV;
-    // KineticE = 1.6 * GeV;    
-    particleGun->SetParticleDefinition(GunParticleType);
-    particleGun->SetParticlePosition(pos);
-    particleGun->SetParticleMomentumDirection(direction);
-    particleGun->SetParticleEnergy(KineticE);
-    particleGun->SetParticlePolarization(G4ThreeVector(0, 0, 0));
+
+  G4String partName = "e-";
+  GunParticleType = partTable->FindParticle(partName);
+
+  G4double mass = GunParticleType->GetPDGMass();
+  // G4cout << "mass: " << mass << G4endl;
+
+  // G4ThreeVector pos(0, 0.5 * m, 0.3 * m);
+  G4ThreeVector pos(0, 0, -(MyTarget::kLengthContainer + 10 * cm));
+  G4ThreeVector direction(0, 0, 1);
+
+  G4double KineticE = 2.2 * GeV - mass;
+  // G4cout << "KineticE: " << KineticE << G4endl;
+  // KineticE = 80 * MeV;
+  // KineticE = 1.6 * GeV;
+  particleGun->SetParticleDefinition(GunParticleType);
+  particleGun->SetParticlePosition(pos);
+  particleGun->SetParticleMomentumDirection(direction);
+  particleGun->SetParticleEnergy(KineticE);
+  particleGun->SetParticlePolarization(G4ThreeVector(0, 0, 0));
+}
+
+void G4SBSPrimaryGeneratorAction::SetAVFFGun_Test()
+{
+  G4ParticleTable *partTable = G4ParticleTable::GetParticleTable();
+
+  G4String partName = "proton";
+  GunParticleType = partTable->FindParticle(partName);
+
+  G4double mass = GunParticleType->GetPDGMass();
+  // G4cout << "mass: " << mass << G4endl;
+  // G4ThreeVector pos(0, 0, 3 * m);
+  // G4ThreeVector pos(5 * sin(-30 * deg) * m, 0.5 * m, 5 * cos(30 * deg) * m);
+  G4ThreeVector pos(0, 0, 0);
+  G4ThreeVector direction(0, 0, 1);
+  direction.rotateY(-30 * deg);
+  G4double KineticE = 2 * GeV - mass;
+  // G4cout << "KineticE: " << KineticE << G4endl;
+  // KineticE = 80 * MeV;
+  // KineticE = 1.6 * GeV;
+  // particleGun->SetParticleDefinition(GunParticleType);
+  // particleGun->SetParticlePosition(pos);
+  // particleGun->SetParticleMomentumDirection(direction1);
+  // particleGun->SetParticleEnergy(KineticE);
+  // particleGun->SetParticlePolarization(G4ThreeVector(0, 0, 0));
+
+  // direction2.rotateY(-30 * deg);
+  // G4cout << "X-Y-Z: " << direction2.getX() << "\t" << direction2.getY() << "\t" << direction2.getZ() << G4endl;
+  particleGun->SetParticleDefinition(GunParticleType);
+  particleGun->SetParticlePosition(pos);
+  particleGun->SetParticleMomentumDirection(direction);
+  particleGun->SetParticleEnergy(KineticE);
+  particleGun->SetParticlePolarization(G4ThreeVector(0, 0, 0));
 }

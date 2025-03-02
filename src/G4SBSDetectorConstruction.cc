@@ -2686,7 +2686,7 @@ G4VPhysicalVolume *G4SBSDetectorConstruction::ConstructAll()
   // G4GDMLParser parser;
   // parser.Write("geometry.gdml", WorldPhys);
   return WorldPhys;
-  return WorldPhys;
+  // return WorldPhys;
 }
 
 void G4SBSDetectorConstruction::SetBigBiteField(int n, G4String fname)

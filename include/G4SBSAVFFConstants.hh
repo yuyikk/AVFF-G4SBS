@@ -116,13 +116,20 @@ namespace MyMagnet2
     constexpr G4double kCorePosY = kPosY;
     constexpr G4double kCorePosZ = kPosZ;
 }
-namespace MyLeadBlock // the arm for lepton detection
+namespace MyLeadBlock 
 {
     constexpr G4double kThickness= 80 * cm;
     constexpr G4double kThickness2 = 80 * cm;
     constexpr G4double kHeight = 1 * m;
     constexpr G4double kUpperEdgeSize = 40 * cm;
     constexpr G4double kDistToBeam = 28 * cm;
+}
+namespace MyLeadWall // neutron arm lead wall
+{
+    constexpr G4double kLength = 15 * m;
+    constexpr G4double kWidth = 1 * m;
+    constexpr G4double kHeight = 9 * m;
+    
 }
 namespace MyHCal
 {

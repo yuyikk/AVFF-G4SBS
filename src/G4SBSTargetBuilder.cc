@@ -7039,11 +7039,7 @@ void G4SBSTargetBuilder::BuildAVFFCollimator(G4LogicalVolume *motherLog)
   CollimatorVisAtt->SetForceSolid(true);
   logicCollimator->SetVisAttributes(CollimatorVisAtt);
   logicCollimator2->SetVisAttributes(CollimatorVisAtt);
-
-  G4VisAttributes *CollimatorVisAtt2 = new G4VisAttributes(G4Colour::Green());
-  CollimatorVisAtt2->SetVisibility(true);
-  CollimatorVisAtt2->SetForceSolid(true);
-  logicCollimator3->SetVisAttributes(CollimatorVisAtt2);
+  logicCollimator3->SetVisAttributes(CollimatorVisAtt);
   // logicTmp2->SetVisAttributes(CollimatorVisAtt);
   // logicCone->SetVisAttributes(CollimatorVisAtt);
 }

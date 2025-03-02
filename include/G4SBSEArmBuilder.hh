@@ -58,6 +58,7 @@ public:
   void MakeAVFFNMagnet2(G4LogicalVolume *);
   void MakeAVFFNCal(G4LogicalVolume *);
   void MakeLeadBlocks(G4LogicalVolume *);
+  void MakeLeadWall(G4LogicalVolume *);
   void SetNArmAngle(const double &val) { fNArmAng = val; }
   void SetNArmMagField(const G4ThreeVector &val) { fNMagField = val; }
   double fBBang;

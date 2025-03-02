@@ -170,6 +170,7 @@ void G4SBSEArmBuilder::BuildComponent(G4LogicalVolume *worldlog)
   {
     MakeLeadBlocks(worldlog);
     MakeAVFFNArm(worldlog);
+    MakeLeadWall(worldlog);
   }
 }
 
@@ -4638,16 +4639,16 @@ void G4SBSEArmBuilder::MakeAVFFNMagnet2(G4LogicalVolume *motherlog)
   G4SubtractionSolid *solidCoil = new G4SubtractionSolid("solidCoil", box3, solidCore);
   G4Box *solidBField = new G4Box("solidBField", MyMagnet2::kFieldSizeX / 2, MyMagnet2::kFieldSizeY / 2, MyMagnet2::kFieldSizeZ / 2);
   G4Box *solidVrt1 = new G4Box("solidVrt1", MyMagnet::kFieldSizeX / 2, MyMagnet::kFieldSizeY / 2, 0.5 * um);
-  
+
   G4LogicalVolume *logicVrt1 = new G4LogicalVolume(solidVrt1, GetMaterial("Vacuum"), "logicVrt1");
   G4LogicalVolume *logicMagnetShell = new G4LogicalVolume(solidMagnetShell, Iron, "logicMagnetShell");
   G4LogicalVolume *logicCore = new G4LogicalVolume(solidCore, Iron, "logicCore");
   G4LogicalVolume *logicCoil = new G4LogicalVolume(solidCoil, Copper, "logicCoil");
   G4LogicalVolume *logicBField = new G4LogicalVolume(solidBField, GetMaterial("Air"), "logicBField");
 
-  auto pos1 = G4ThreeVector(MyMagnet2::kPosX, MyMagnet2::kPosY, MyMagnet2::kPosZ); // position for magnet
-  auto pos2 = G4ThreeVector(MyMagnet2::kCorePosX, MyMagnet2::kCorePosY, MyMagnet2::kCorePosZ); // position for 2 cores
-  auto pos3 = G4ThreeVector(-MyMagnet2::kCorePosX, MyMagnet2::kCorePosY, MyMagnet2::kCorePosZ); // position for 2 coils
+  auto pos1 = G4ThreeVector(MyMagnet2::kPosX, MyMagnet2::kPosY, MyMagnet2::kPosZ);                                         // position for magnet
+  auto pos2 = G4ThreeVector(MyMagnet2::kCorePosX, MyMagnet2::kCorePosY, MyMagnet2::kCorePosZ);                             // position for 2 cores
+  auto pos3 = G4ThreeVector(-MyMagnet2::kCorePosX, MyMagnet2::kCorePosY, MyMagnet2::kCorePosZ);                            // position for 2 coils
   auto pos4 = G4ThreeVector(MyMagnet2::kPosX, MyMagnet2::kPosY, MyMagnet2::kPosZ - MyMagnet2::kFieldSizeZ / 2 - 0.5 * um); // position for virtial plane
   new G4PVPlacement(0, pos1, logicMagnetShell, "physMagnetShell", motherlog, false, 0, true);
   new G4PVPlacement(0, pos1, logicBField, "physBField", motherlog, false, 0, true);
@@ -4656,10 +4657,6 @@ void G4SBSEArmBuilder::MakeAVFFNMagnet2(G4LogicalVolume *motherlog)
   new G4PVPlacement(0, pos2, logicCoil, "physCoil1", motherlog, false, 0, true);
   new G4PVPlacement(0, pos3, logicCoil, "physCoil2", motherlog, false, 0, true);
   new G4PVPlacement(0, pos4, logicVrt1, "physVrt1", motherlog, false, 10001, true);
-
-  
-  
-  
 
   G4VisAttributes *VisAtt = new G4VisAttributes(G4Colour::Green());
   VisAtt->SetVisibility(true);
@@ -4775,6 +4772,7 @@ void G4SBSEArmBuilder::MakeAVFFTOF(G4LogicalVolume *motherlog)
     logicVrt2->SetSensitiveDetector(sdVrt);
   }
 
+  
   G4String sdName_tof = "TOF";
   G4String collName_tof = "NeuArmTOFColl";
   if (!((G4SBSNeuArmTOFSD *)sdman->FindSensitiveDetector(sdName_tof)))
@@ -4881,6 +4879,7 @@ void G4SBSEArmBuilder::MakeAVFFNCal(G4LogicalVolume *motherlog)
     fDetCon->SDtype[sdName_vrt] = G4SBS::kAVFF_Virtual;
     logicVrt3->SetSensitiveDetector(sdVrt);
   }
+
   FrontDistToNeuArmCenter += 1 * um;
   G4double HCalPosX = 0;
   G4double HCalPosY = 0;
@@ -5137,69 +5136,90 @@ void G4SBSEArmBuilder::MakeAVFFNCal(G4LogicalVolume *motherlog)
 void G4SBSEArmBuilder::MakeLeadBlocks(G4LogicalVolume *motherlog)
 {
   auto Lead = GetMaterial("Lead");
-   
 
-    // G4double shift1 = MyTarget::kPosZ - edge1 - 0.5 * MyMagnet::kFieldSizeX / sin(48 * deg) + MyCollimator::kThickness / tan(48 * deg) + 17 * cm;
-    G4double ConeHeight = MyCollimator::kThickness / tan(-fNArmAng);
-    G4double shift1 = -5 * cm  + ConeHeight;
-    G4ThreeVector p1(0.5 * MyMagnet2::kFieldSizeX, 0, MyMagnet2::kCtoTarget - MyTarget::kPosZ - 0.5 * MyMagnet2::kFieldSizeZ);
-    p1.rotateY(-fNArmAng);
-    G4ThreeVector p2(MyLeadBlock::kDistToBeam, 0, shift1);
-    G4double thickness = MyLeadBlock::kThickness;
-    G4double edge1 = MyLeadBlock::kUpperEdgeSize;
-    G4ThreeVector dp = p1 - p2;
-    // G4double edge2 = edge1 + thickne÷ss / tan(48 * deg);
-    G4double edge2 = edge1 + thickness * dp.getZ() / dp.getX();
-    std::vector<G4TwoVector> polygon1;
-    polygon1.emplace_back(0.0 * cm, 0.0 * cm); // bottom-left corner
-    polygon1.emplace_back(0.0 * cm, edge1);    // bottom-right corner
-    polygon1.emplace_back(thickness, edge2);   // top-right corner
-    polygon1.emplace_back(thickness, 0 * cm);  // top-left corner
+  // G4double shift1 = MyTarget::kPosZ - edge1 - 0.5 * MyMagnet::kFieldSizeX / sin(48 * deg) + MyCollimator::kThickness / tan(48 * deg) + 17 * cm;
+  G4double ConeHeight = MyCollimator::kThickness / tan(-fNArmAng);
+  G4double shift1 = -5 * cm + ConeHeight;
+  G4ThreeVector p1(0.5 * MyMagnet2::kFieldSizeX, 0, MyMagnet2::kCtoTarget - MyTarget::kPosZ - 0.5 * MyMagnet2::kFieldSizeZ);
+  p1.rotateY(-fNArmAng);
+  G4ThreeVector p2(MyLeadBlock::kDistToBeam, 0, shift1);
+  G4double thickness = MyLeadBlock::kThickness;
+  G4double edge1 = MyLeadBlock::kUpperEdgeSize;
+  G4ThreeVector dp = p1 - p2;
+  // G4double edge2 = edge1 + thickne÷ss / tan(48 * deg);
+  G4double edge2 = edge1 + thickness * dp.getZ() / dp.getX();
+  std::vector<G4TwoVector> polygon1;
+  polygon1.emplace_back(0.0 * cm, 0.0 * cm); // bottom-left corner
+  polygon1.emplace_back(0.0 * cm, edge1);    // bottom-right corner
+  polygon1.emplace_back(thickness, edge2);   // top-right corner
+  polygon1.emplace_back(thickness, 0 * cm);  // top-left corner
 
-    // Z 方向的厚度
-    G4double halfThickness = MyLeadBlock::kHeight;
+  // Z 方向的厚度
+  G4double halfThickness = MyLeadBlock::kHeight;
 
-    // 创建 G4ExtrudedSolid
-    G4ExtrudedSolid *trapezoid = new G4ExtrudedSolid("Trapezoid", polygon1,
-                                                     halfThickness, G4TwoVector(0, 0), 1.0, G4TwoVector(0, 0), 1.0);
-    G4LogicalVolume *logicTrapezoid = new G4LogicalVolume(trapezoid, Lead, "logicTrapezoid");
+  // 创建 G4ExtrudedSolid
+  G4ExtrudedSolid *trapezoid = new G4ExtrudedSolid("Trapezoid", polygon1,
+                                                   halfThickness, G4TwoVector(0, 0), 1.0, G4TwoVector(0, 0), 1.0);
+  G4LogicalVolume *logicTrapezoid = new G4LogicalVolume(trapezoid, Lead, "logicTrapezoid");
 
-   
-    G4RotationMatrix *rot1 = new G4RotationMatrix();
-    rot1->rotateX(-90 * deg);
-    G4ThreeVector pos1 = G4ThreeVector(MyLeadBlock::kDistToBeam, 0, MyTarget::kPosZ + shift1 - edge1);
-    new G4PVPlacement(rot1, pos1, logicTrapezoid, "physTrapezoid", motherlog, false, 0, true);
+  G4RotationMatrix *rot1 = new G4RotationMatrix();
+  rot1->rotateX(-90 * deg);
+  G4ThreeVector pos1 = G4ThreeVector(MyLeadBlock::kDistToBeam, 0, MyTarget::kPosZ + shift1 - edge1);
+  new G4PVPlacement(rot1, pos1, logicTrapezoid, "physTrapezoid", motherlog, false, 0, true);
 
-    G4double shift2 = 5 * cm;
-    G4RotationMatrix *rot2 = new G4RotationMatrix();
-    rot2->rotateX(-90 * deg);
-    rot2->rotateZ(180 * deg);
-    G4ThreeVector p3(-0.5 * MyMagnet2::kFieldSizeX, 0, MyMagnet2::kCtoTarget - MyTarget::kPosZ - 0.5 * MyMagnet2::kFieldSizeZ);
-    p3.rotateY(-fNArmAng);
-    G4ThreeVector p4(MyLeadBlock::kDistToBeam, 0, shift2 + ConeHeight);
-    G4ThreeVector dp2 = p3 - p4;
+  G4double shift2 = 5 * cm;
+  G4RotationMatrix *rot2 = new G4RotationMatrix();
+  rot2->rotateX(-90 * deg);
+  rot2->rotateZ(180 * deg);
+  G4ThreeVector p3(-0.5 * MyMagnet2::kFieldSizeX, 0, MyMagnet2::kCtoTarget - MyTarget::kPosZ - 0.5 * MyMagnet2::kFieldSizeZ);
+  p3.rotateY(-fNArmAng);
+  G4ThreeVector p4(MyLeadBlock::kDistToBeam, 0, shift2 + ConeHeight);
+  G4ThreeVector dp2 = p3 - p4;
 
-    edge1 = 0 * cm;
-    thickness = MyLeadBlock::kThickness2;
-    edge2 = edge1 + MyLeadBlock::kThickness2 * dp2.getZ() / dp2.getX();
-    std::vector<G4TwoVector> polygon2;
-    polygon2.emplace_back(0.0 * cm, 0.0 * cm); // bottom-left corner
-    polygon2.emplace_back(0.0 * cm, edge1);    // bottom-right corner
-    polygon2.emplace_back(thickness, edge2);   // top-right corner
-    polygon2.emplace_back(thickness, 0 * cm);  // top-left corner
+  edge1 = 0 * cm;
+  thickness = MyLeadBlock::kThickness2;
+  edge2 = edge1 + MyLeadBlock::kThickness2 * dp2.getZ() / dp2.getX();
+  std::vector<G4TwoVector> polygon2;
+  polygon2.emplace_back(0.0 * cm, 0.0 * cm); // bottom-left corner
+  polygon2.emplace_back(0.0 * cm, edge1);    // bottom-right corner
+  polygon2.emplace_back(thickness, edge2);   // top-right corner
+  polygon2.emplace_back(thickness, 0 * cm);  // top-left corner
 
-    G4ExtrudedSolid *trapezoid2 = new G4ExtrudedSolid("Trapezoid2", polygon2,
-                                                      halfThickness, G4TwoVector(0, 0), 1.0, G4TwoVector(0, 0), 1.0);
-    G4LogicalVolume *logicTrapezoid2 = new G4LogicalVolume(trapezoid2, Lead, "logicTrapezoid2");
-    G4ThreeVector pos2 = G4ThreeVector(MyLeadBlock::kDistToBeam + thickness, 
-                                       0, 
-                                       MyTarget::kPosZ + shift2 + ConeHeight + edge2);
-    // G4ThreeVector(28 * cm + thickness, 0, edge2 + 0.5 * MyMagnet::kFieldSizeX / sin(48 * deg) + 8 * cm + MyTarget::kPosZ)
-    new G4PVPlacement(rot2, pos2, logicTrapezoid2, "physTrapezoid2", motherlog, false, 0, true);
+  G4ExtrudedSolid *trapezoid2 = new G4ExtrudedSolid("Trapezoid2", polygon2,
+                                                    halfThickness, G4TwoVector(0, 0), 1.0, G4TwoVector(0, 0), 1.0);
+  G4LogicalVolume *logicTrapezoid2 = new G4LogicalVolume(trapezoid2, Lead, "logicTrapezoid2");
+  G4ThreeVector pos2 = G4ThreeVector(MyLeadBlock::kDistToBeam + thickness,
+                                     0,
+                                     MyTarget::kPosZ + shift2 + ConeHeight + edge2);
+  // G4ThreeVector(28 * cm + thickness, 0, edge2 + 0.5 * MyMagnet::kFieldSizeX / sin(48 * deg) + 8 * cm + MyTarget::kPosZ)
+  new G4PVPlacement(rot2, pos2, logicTrapezoid2, "physTrapezoid2", motherlog, false, 0, true);
 
-    G4VisAttributes *VisAtt = new G4VisAttributes(G4Colour::Gray());
-    VisAtt->SetVisibility(true);
-    VisAtt->SetForceSolid(true);
-    logicTrapezoid->SetVisAttributes(VisAtt);
-    logicTrapezoid2->SetVisAttributes(VisAtt);
+  G4VisAttributes *VisAtt = new G4VisAttributes(G4Colour::Black());
+  VisAtt->SetVisibility(true);
+  VisAtt->SetForceSolid(true);
+  logicTrapezoid->SetVisAttributes(VisAtt);
+  logicTrapezoid2->SetVisAttributes(VisAtt);
+}
+
+//
+void G4SBSEArmBuilder::MakeLeadWall(G4LogicalVolume *motherlog)
+{
+  G4double posZ = 9 * m;
+  G4double L = MyNeuArm::kSizeX / 2 + MyLeadWall::kWidth / 2 + 5 * cm;
+  L /= sin(fabs(fNArmAng));
+  G4double posX = (posZ - L) * tan(fabs(fNArmAng));
+  G4double posY = 0;
+  
+  G4Box *solidWall = new G4Box("solidLeadWall", MyLeadWall::kWidth / 2., MyLeadWall::kHeight / 2., MyLeadWall::kLength / 2.);
+  G4LogicalVolume *logicWall = new G4LogicalVolume(solidWall, GetMaterial("Lead"), "logicLeadWall");
+  G4RotationMatrix *rot = new G4RotationMatrix();
+  rot->rotateY(fNArmAng);
+  G4ThreeVector pos(posX, posY, posZ);
+  new G4PVPlacement(rot, pos, logicWall, "physLeadWall", motherlog, false, 0, true);
+
+  G4VisAttributes *VisAtt = new G4VisAttributes(G4Colour::Black());
+  VisAtt->SetVisibility(true);
+  VisAtt->SetForceSolid(true);
+  logicWall->SetVisAttributes(VisAtt);
+
 }

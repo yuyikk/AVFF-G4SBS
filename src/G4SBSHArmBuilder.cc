@@ -15,6 +15,7 @@
 #include "G4GenericTrap.hh"
 #include "G4SBSRICHSD.hh"
 #include "G4SBSGlobalField.hh"
+#include "G4SBSNeuArmVirtualSD.hh"
 
 #include "G4OpticalSurface.hh"
 #include "G4LogicalSkinSurface.hh"
@@ -139,6 +140,7 @@ void G4SBSHArmBuilder::BuildComponent(G4LogicalVolume *worldlog)
     // MakeHCAL( worldlog, fHCALvertical_offset );
     if (exptype != G4SBS::kA1n && exptype != G4SBS::kTDIS && exptype != G4SBS::kNDVCS)
       MakeHCALV2(worldlog, fHCALvertical_offset);
+      // int tmp = 0;
   }
 
   // Now build special components for experiments
@@ -153,6 +155,7 @@ void G4SBSHArmBuilder::BuildComponent(G4LogicalVolume *worldlog)
   {
     // Subsystems unique to the GEp experiment include FPP and BigCal:
     MakeGEpFPP(worldlog);
+    MakeVirtual(worldlog, fHCALvertical_offset); // virtual plane
   }
 
   if (exptype == G4SBS::kALL)
@@ -299,7 +302,7 @@ void G4SBSHArmBuilder::MakeGEpFPP(G4LogicalVolume *worldlog)
   SBS_FPP_rm->rotateX(sbsboxpitch);
 
   // FPP box:
-  double sbsdepth = 3.5 * m;
+  double sbsdepth = 2 * m; // change from 3.5 m to 2 m for AVFF with gem tracker removed
   double sbswidth = 2.0 * m;
   double sbsheight = 3.5 * m;
 
@@ -314,6 +317,8 @@ void G4SBSHArmBuilder::MakeGEpFPP(G4LogicalVolume *worldlog)
 
   G4LogicalVolume *sbslog = new G4LogicalVolume(sbsbox, GetMaterial("Air"), "sbslog");
 
+  G4VisAttributes *sbslog_color = new G4VisAttributes(G4Color::Red());
+  sbslog->SetVisAttributes(sbslog_color);
   sbslog->SetVisAttributes(G4VisAttributes::GetInvisible());
   // Now position and orient the FPP "box":
 
@@ -576,7 +581,7 @@ void G4SBSHArmBuilder::Make48D48(G4LogicalVolume *worldlog, double r48d48)
   G4LogicalVolume *big48d48Log = new G4LogicalVolume(big48d48_wslot, GetMaterial("Fer"),
                                                      "b48d48Log", 0, 0, 0);
 
-  G4VisAttributes *magnet_visatt = new G4VisAttributes(G4Colour(1 - 0.75, 1- 0.75, 1 - 0.75));
+  G4VisAttributes *magnet_visatt = new G4VisAttributes(G4Colour(1 - 0.75, 1 - 0.75, 1 - 0.75));
   big48d48Log->SetVisAttributes(magnet_visatt);
 
   if (fDetCon->fTotalAbs)
@@ -1224,6 +1229,79 @@ void G4SBSHArmBuilder::MakeSBSFieldClamps(G4LogicalVolume *motherlog)
   }
 }
 
+void G4SBSHArmBuilder::MakeVirtual(G4LogicalVolume *motherlog,
+                                   G4double VerticalOffset)
+{
+  G4bool checkOverlap = fDetCon->fCheckOverlap;
+
+  G4double dim_ModuleX = 152.40 * CLHEP::mm;
+  G4double dim_ModuleY = 152.40 * CLHEP::mm;
+  G4double dim_ModuleZ = 1555.70 * CLHEP::mm;
+
+  // Specify the number of rows and columns for standard HCAL configuration
+  G4double num_rows = 24;
+  G4double num_cols = 12;
+
+  // Specify center-to-center distance between modules
+  // (These numbers are from an email from Gregg)
+  G4double dist_ModuleCToCX = 154.94 * CLHEP::mm;
+  G4double dist_ModuleCToCY = 158.75 * CLHEP::mm;
+
+  G4double dim_HCALFrontPlateZ = 19.05 * CLHEP::mm;
+
+  // Specify the dimensions of the HCAL mother box/volume
+  G4double dim_HCALX = (num_cols - 1) * dist_ModuleCToCX + dim_ModuleX;
+  G4double dim_HCALY = (num_rows - 1) * dist_ModuleCToCY + dim_ModuleY;
+  G4double dim_HCALZ = dim_ModuleZ + dim_HCALFrontPlateZ;
+
+  // Specify the distance from entrance to HCAL to center of target
+  G4double dist_HCalRadius = fHCALdist + dim_HCALZ / 2.0;
+  G4double dist_HCALX = -dist_HCalRadius * sin(f48D48ang + fHCALangular_offset);
+  G4double dist_HCALY = VerticalOffset;
+  G4double dist_HCALZ = dist_HCalRadius * cos(f48D48ang + fHCALangular_offset);
+
+  // Specify the rotation matrix for this HCAL
+  G4RotationMatrix *rot_HCAL = new G4RotationMatrix;
+  rot_HCAL->rotateY(f48D48ang + fHCALangular_offset);
+
+  G4ThreeVector HCAL_zaxis(dist_HCALX, 0.0, dist_HCALZ);
+  G4ThreeVector HCAL_yaxis(0.0, 1.0, 0.0);
+
+  HCAL_zaxis = HCAL_zaxis.unit();
+  G4ThreeVector HCAL_xaxis = HCAL_yaxis.cross(HCAL_zaxis).unit();
+
+  // Lastly, place the HCAL volum
+
+  // G4Box *sol_HCAL = new G4Box("sol_HCAL",
+  //   dim_HCALX / 2. + 0.01 * mm, dim_HCALY / 2. + 0.01 * mm, dim_HCALZ / 2. + 0.01 * mm);
+  G4Box *solidVrt4 = new G4Box("solidVrt4",
+                               dim_HCALX / 2.,
+                               dim_HCALY / 2.,
+                               0.5 * um);
+  G4LogicalVolume *logicVrt4 = new G4LogicalVolume(solidVrt4, GetMaterial("Air"), "logicVrt4");
+  G4ThreeVector Vrt4Pos = HCAL_zaxis * (dist_HCalRadius - dim_HCALZ / 2. - 0.01 * mm - 1 * um) +
+                          HCAL_xaxis * fHCALhorizontal_offset +
+                          HCAL_yaxis * fHCALvertical_offset;
+  new G4PVPlacement(rot_HCAL, Vrt4Pos, logicVrt4, "physVrt4", motherlog, false, 10004, true);
+
+  G4SDManager *sdman = fDetCon->fSDman;
+  G4String sdName_vrt = "Virtual4";
+  G4String collName_vrt = "Virtual4Coll";
+  if (!((G4SBSNeuArmVirtualSD *)sdman->FindSensitiveDetector(sdName_vrt)))
+  {
+    G4cout << "Adding sensitive detector for virtual detectors in sbs arm to SDman..." << G4endl;
+    G4SBSNeuArmVirtualSD *sdVrt = new G4SBSNeuArmVirtualSD(sdName_vrt, collName_vrt);
+    sdman->AddNewDetector(sdVrt);
+    (fDetCon->SDlist).insert(sdName_vrt);
+    fDetCon->SDtype[sdName_vrt] = G4SBS::kAVFF_Virtual;
+    logicVrt4->SetSensitiveDetector(sdVrt);
+  }
+  // Scintillator and Mylar
+  G4VisAttributes *vis_Scint = new G4VisAttributes(G4Color::Cyan());
+  vis_Scint->SetForceSolid();
+  logicVrt4->SetVisAttributes(G4VisAttributes::GetInvisible());
+}
+
 void G4SBSHArmBuilder::MakeHCALV2(G4LogicalVolume *motherlog,
                                   G4double VerticalOffset)
 {
@@ -1835,6 +1913,8 @@ void G4SBSHArmBuilder::MakeHCALV2(G4LogicalVolume *motherlog,
   new G4PVPlacement(rot_HCAL, HCAL_pos,
                     log_HCAL, "HCal Mother", motherlog, false, 0, checkOverlap);
 
+  // G4Box *sol_HCAL = new G4Box("sol_HCAL",
+  //   dim_HCALX / 2. + 0.01 * mm, dim_HCALY / 2. + 0.01 * mm, dim_HCALZ / 2. + 0.01 * mm);
   // Apply the step limiter, if requested
   if ((fDetCon->StepLimiterList).find(HCalScintSDName) != (fDetCon->StepLimiterList).end())
   {
@@ -1906,22 +1986,22 @@ void G4SBSHArmBuilder::MakeHCALV2(G4LogicalVolume *motherlog,
   log_WaveShiftRod->SetVisAttributes(vis_WaveShiftRod);
 
   // LightGuide
-  G4VisAttributes *vis_LightGuide = new G4VisAttributes(G4Colour(1-1.0, 1-1.0, 1.0, trans));
+  G4VisAttributes *vis_LightGuide = new G4VisAttributes(G4Colour(1 - 1.0, 1 - 1.0, 1.0, trans));
   log_LightGuide->SetVisAttributes(vis_LightGuide);
 
   // PMTCathode
-  G4VisAttributes *vis_PMTCathode = new G4VisAttributes(G4Colour(1.0, 1-.41, 1-.71));
+  G4VisAttributes *vis_PMTCathode = new G4VisAttributes(G4Colour(1.0, 1 - .41, 1 - .71));
   log_PMTCathode->SetVisAttributes(vis_PMTCathode);
 
   // FrontPl & BackPl
-  G4VisAttributes *vis_FrontPl = new G4VisAttributes(G4Colour(1-0.3, 1-0.3, 1-0.3));
+  G4VisAttributes *vis_FrontPl = new G4VisAttributes(G4Colour(1 - 0.3, 1 - 0.3, 1 - 0.3));
   log_FrontPl->SetVisAttributes(vis_FrontPl);
-  G4VisAttributes *vis_BackPl = new G4VisAttributes(G4Colour(1-0.3, 1-0.3, 1-0.3));
+  G4VisAttributes *vis_BackPl = new G4VisAttributes(G4Colour(1 - 0.3, 1 - 0.3, 1 - 0.3));
   log_BackPl->SetVisAttributes(vis_BackPl);
 
   // Shim Gap Spacer
   G4VisAttributes *vis_ShimGapSpacer = new G4VisAttributes(
-      G4Colour(1- 1.0, 1 - 1.0, 1 - 0.0));
+      G4Colour(1 - 1.0, 1 - 1.0, 1 - 0.0));
   log_ShimGapSpacer->SetVisAttributes(vis_ShimGapSpacer);
 
   // FrontPlate (steel mounting plate)
@@ -4119,6 +4199,18 @@ void G4SBSHArmBuilder::MakeFPP(G4LogicalVolume *Mother, G4RotationMatrix *rot, G
     trkr_yoff[0] = 16.5 * cm;
     trkr_yoff[1] = 34.1 * cm;
     break;
+  case 6:
+    nana = 0;
+    ntracker = 0;
+    ngem[0] = 8;
+    GEM_z_spacing[0] = 13.2 * cm;
+    GEM_z_spacing[1] = 11.3 * cm;
+    trkr_zpos[0] = 0.0;
+    trkr_zpos[1] = 2.074 * m;
+    fGEP_CH2zpos[0] = 1.518 * m - 0.5 * fCH2thickFPP[0];
+    trkr_yoff[0] = 16.5 * cm;
+    trkr_yoff[1] = 34.1 * cm;
+    break;
   }
 
   G4VisAttributes *CH2anavisatt = new G4VisAttributes(G4Colour(0.0, 0.0, 1.0));
@@ -4179,7 +4271,7 @@ void G4SBSHArmBuilder::MakeFPP(G4LogicalVolume *Mother, G4RotationMatrix *rot, G
 
     // G4ThreeVector lead_wall2_pos = G4ThreeVector( 36.0*cm, trkr_yoff[0], -78.0*cm -3.5*GEM_z_spacing[0]  );
 
-    G4ThreeVector lead_wall2_pos = G4ThreeVector(34.5 * 2.54 * cm, trkr_yoff[0] - (00.0 * cm), -68.5 * cm - 1.9 * GEM_z_spacing[0]);
+    G4ThreeVector lead_wall2_pos = G4ThreeVector(34.5 * 2.54 * cm, trkr_yoff[0] - 0.0 * cm, 68.5 * cm - 75 * cm - 1.9 * GEM_z_spacing[0]);
     // was 3.4 gemz
     // x offset was 31.5, testing chris soova model distance
 
@@ -4193,9 +4285,9 @@ void G4SBSHArmBuilder::MakeFPP(G4LogicalVolume *Mother, G4RotationMatrix *rot, G
 
     G4LogicalVolume *lead_wall3_log = new G4LogicalVolume(lead_wall3, GetMaterial("Lead"), "lead_wall3_log");
 
-    G4ThreeVector lead_wall3_pos = G4ThreeVector(34.5 * 2.54 * cm, trkr_yoff[1] - (00.0 * cm), trkr_zpos[1] - 75.0 * cm - 7.5 * GEM_z_spacing[1]);
+    G4ThreeVector lead_wall3_pos = G4ThreeVector(34.5 * 2.54 * cm, trkr_yoff[1] - (00.0 * cm), trkr_zpos[1] + 75 * cm - 75.0 * cm - 7.5 * GEM_z_spacing[1]);
 
-    //new G4PVPlacement(0, lead_wall3_pos, lead_wall3_log, "lead_wall3_phys", Mother, false, 0);
+    // new G4PVPlacement(0, lead_wall3_pos, lead_wall3_log, "lead_wall3_phys", Mother, false, 0);
 
     // lead_wall1 is now used as the shielding in the space between the corrector magnet and the lead wall blocking the line of sight between the beamline and the front tracker(lead_wall2)
 
@@ -4205,7 +4297,7 @@ void G4SBSHArmBuilder::MakeFPP(G4LogicalVolume *Mother, G4RotationMatrix *rot, G
 
     G4LogicalVolume *lead_wall1_log = new G4LogicalVolume(lead_wall1, GetMaterial("Lead"), "lead_wall1_log");
 
-    G4ThreeVector lead_wall1_pos = G4ThreeVector(34.0 * 2.54 * cm, trkr_yoff[1] - (30.0 * cm), trkr_zpos[1] - 317.0 * cm - 6.4 * GEM_z_spacing[1]);
+    G4ThreeVector lead_wall1_pos = G4ThreeVector(34.0 * 2.54 * cm, trkr_yoff[1] - (30.0 * cm), trkr_zpos[1] + 75 * cm - 317.0 * cm - 6.4 * GEM_z_spacing[1]);
 
     new G4PVPlacement(rot_lead_wall, lead_wall1_pos, lead_wall1_log, "lead_wall1_phys", Mother, false, 0);
 

@@ -36,6 +36,7 @@ public:
   void SetParticleName( G4String pname ){ GunParticleName = pname; }
   void SetGunPolarization( G4ThreeVector S ){ GunPolarization = S; }
   void SetAVFFGun();
+  void SetAVFFGun_Test();
 
 private:
   G4ParticleGun* particleGun;
