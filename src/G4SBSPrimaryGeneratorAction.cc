@@ -88,6 +88,7 @@ void G4SBSPrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
   if (sbsgen->GetKine() == G4SBS::kAVFFGun)
   {
     SetAVFFGun();
+    // SetAVFFGun_Test();
     particleGun->GeneratePrimaryVertex(anEvent);
     // return;
   }
@@ -538,8 +539,8 @@ void G4SBSPrimaryGeneratorAction::SetAVFFGun_Test()
   // G4ThreeVector pos(5 * sin(-30 * deg) * m, 0.5 * m, 5 * cos(30 * deg) * m);
   G4ThreeVector pos(0, 0, 0);
   G4ThreeVector direction(0, 0, 1);
-  direction.rotateY(-30 * deg);
-  G4double KineticE = 2 * GeV - mass;
+  direction.rotateY(48 * deg);
+  G4double KineticE = 5 * GeV - mass;
   // G4cout << "KineticE: " << KineticE << G4endl;
   // KineticE = 80 * MeV;
   // KineticE = 1.6 * GeV;

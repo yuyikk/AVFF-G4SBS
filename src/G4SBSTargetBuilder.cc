@@ -7004,7 +7004,7 @@ void G4SBSTargetBuilder::BuildAVFFCollimator(G4LogicalVolume *motherLog)
   // make and place the center collimator
   // calculate the opening angle (in degree) of the center collimator 
   // to the window of magnet field at neutron arm
-  G4double openangle = std::atan(0.5 * MyMagnet2::kFieldSizeY / (MyMagnet2::kPosZ - MyTarget::kPosZ - MyMagnet2::kFieldSizeZ / 2.)) / CLHEP::pi * 180. * deg;
+  G4double openangle = std::atan(0.5 * MyMagnet2::kFieldSizeY / (MyMagnet2::kCtoTarget - MyTarget::kPosZ - MyMagnet2::kFieldSizeZ / 2.));
   G4Tubs *solidTubs1 = new G4Tubs("solidTubs1", MyCollimator::kInnerR, MyCollimator::kOuterR, 5 * cm, openangle, 90 * deg - openangle);
   G4Tubs *solidTubs2 = new G4Tubs("solidTubs2", MyCollimator::kInnerR, MyCollimator::kOuterR, 5 * cm, -90 * deg, 90 * deg - openangle); 
   G4Cons *solidCons1 = new G4Cons("solidCons1", MyCollimator::kInnerR, MyCollimator::kInnerR, MyCollimator::kInnerR, MyCollimator::kOuterR, coneHeight / 2, openangle, 90 * deg - openangle);
@@ -7026,13 +7026,6 @@ void G4SBSTargetBuilder::BuildAVFFCollimator(G4LogicalVolume *motherLog)
   G4LogicalVolume *logicCollimator3 = new G4LogicalVolume(solidCollimator3_Sub, Tungsten, "logicCollimator3");
   G4ThreeVector collPos3 = G4ThreeVector(MyTarget::kPosX, MyTarget::kPosY, MyTarget::kPosZ + coneHeight);
   new G4PVPlacement(nullptr, collPos3, logicCollimator3, "physCollimator3", motherLog, false, 0, true);
-  // new G4PVPlacement(rotation, G4ThreeVector(0, 0, 300 * cm), logicCollimator2, "physCollimator2", motherlog, false, 0, true);
-
-  // G4LogicalVolume *logicCone = new G4LogicalVolume(solidCone_Sub, Tungsten, "logicCone");
-  // new G4PVPlacement(0, G4ThreeVector(200 * cm, 0, 300 * cm), logicCone, "physCone", motherlog, false, 0, true);
-
-  // G4LogicalVolume *logicTmp2 = new G4LogicalVolume(solid_tmp2, Tungsten, "logicTmp2");
-  // new G4PVPlacement(0, G4ThreeVector(100 * cm, 0, 300 * cm), logicTmp2, "physTmp2", motherlog, false, 0, true);
 
   G4VisAttributes *CollimatorVisAtt = new G4VisAttributes(G4Colour::Gray());
   CollimatorVisAtt->SetVisibility(true);
@@ -7040,8 +7033,6 @@ void G4SBSTargetBuilder::BuildAVFFCollimator(G4LogicalVolume *motherLog)
   logicCollimator->SetVisAttributes(CollimatorVisAtt);
   logicCollimator2->SetVisAttributes(CollimatorVisAtt);
   logicCollimator3->SetVisAttributes(CollimatorVisAtt);
-  // logicTmp2->SetVisAttributes(CollimatorVisAtt);
-  // logicCone->SetVisAttributes(CollimatorVisAtt);
 }
 
 // void G4SBSTargetBuilder::BuildHadronFilterGEp(
