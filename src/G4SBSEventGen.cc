@@ -138,6 +138,9 @@ G4SBSEventGen::G4SBSEventGen()
   fAVFFEventGenTree = NULL;
   fAVFFGenChain = NULL;
 
+  fAVFFEventGenBotTree = nullptr;
+  fAVFFGenBotChain = nullptr;
+
   fSIMCChain = NULL;
   fSIMCTree = NULL;
   fchainentry = 0;
@@ -173,6 +176,8 @@ G4SBSEventGen::~G4SBSEventGen()
   delete fSIMCTree;
   delete fAVFFGenChain;
   delete fAVFFEventGenTree;
+  delete fAVFFGenBotChain;
+  delete fAVFFEventGenBotTree;
 }
 
 void G4SBSEventGen::LoadPythiaChain(G4String fname)
@@ -215,6 +220,20 @@ void G4SBSEventGen::LoadAVFFGenChain(G4String fname)
   { // First file:
     fAVFFGenChain = new TChain("T");
     fAVFFGenChain->Add(fname);
+    fchainentry = 0;
+  }
+}
+
+void G4SBSEventGen::LoadAVFFGenBotChain(G4String fname)
+{
+  if (fAVFFGenBotChain != nullptr)
+  {
+    fAVFFGenBotChain->Add(fname);
+  }
+  else
+  { // First file:
+    fAVFFGenBotChain = new TChain("T");
+    fAVFFGenBotChain->Add(fname);
     fchainentry = 0;
   }
 }
@@ -605,6 +624,9 @@ bool G4SBSEventGen::GenerateEvent()
     break;
   case G4SBS::kAVFFGen:
     success = GenerateAVFFGen();
+    break;
+  case G4SBS::kAVFFGen_BOT:
+    success = GenerateAVFFGenBot();
     break;
   // case G4SBS::kAVFFGun:
   //   success = GenerateAVFFGun();
@@ -2700,9 +2722,39 @@ bool G4SBSEventGen::GenerateAVFFGen()
   return true;
 }
 
+bool G4SBSEventGen::GenerateAVFFGenBot()
+{
+  Long64_t totalEvents = fAVFFEventGenBotTree->GetEntries() / 20;
+  Long64_t step = 1;
+  totalEvents > 10000 ? step = 10000 : step = totalEvents;
+  if (fchainentry % step == 0)
+  {
+    G4cout << "Passed event " << fchainentry << " in AVFF bot-generator tree" << G4endl;
+  }
+  fAVFFEventGenBotTree->GetEntry(fchainentry++);
+  fAVFFGenBotEvent.Clear();
+  fAVFFGenBotEvent.fWeight = fAVFFEventGenBotTree->GetWeight();
+  const int nPart = fAVFFEventGenBotTree->GetNumOfParticle();
+  // G4cout << "nParticles in AVFF generator tree event " << fchainentry << " " << nPart << G4endl;
+  for (int i = 0; i < nPart; ++i)
+  {
+    fAVFFGenBotEvent.fPdgID.push_back(fAVFFEventGenBotTree->GetPdgID(i));
+    fAVFFGenBotEvent.fHitX.push_back(fAVFFEventGenBotTree->GetHitX(i));
+    fAVFFGenBotEvent.fHitY.push_back(fAVFFEventGenBotTree->GetHitY(i));
+    fAVFFGenBotEvent.fHitZ.push_back(fAVFFEventGenBotTree->GetHitZ(i));
+    fAVFFGenBotEvent.fTime.push_back(fAVFFEventGenBotTree->GetTime(i));
+
+    fAVFFGenBotEvent.fPx.push_back(fAVFFEventGenBotTree->GetPx(i));
+    fAVFFGenBotEvent.fPy.push_back(fAVFFEventGenBotTree->GetPy(i));
+    fAVFFGenBotEvent.fPz.push_back(fAVFFEventGenBotTree->GetPz(i));
+  }
+  // G4cout << "Good to leave!" << G4endl;
+  return true;
+}
+
 // bool G4SBSEventGen::GenerateAVFFGun()
 // {
-  
+
 // }
 
 TVector3 G4SBSEventGen::GenerateUniformVertex()
@@ -3152,6 +3204,16 @@ void G4SBSEventGen::InitializeAVFFGen_Tree()
   if (!fAVFFEventGenTree)
   {
     G4cout << "Failed to initialize AVFF generator tree, aborting... " << G4endl;
+    exit(-1);
+  }
+}
+
+void G4SBSEventGen::InitializeAVFFGenBot_Tree()
+{
+  fAVFFEventGenBotTree = new AVFFGenBotTree(fAVFFGenBotChain);
+  if (!fAVFFEventGenBotTree)
+  {
+    G4cout << "Failed to initialize AVFF bot-generator tree, aborting... " << G4endl;
     exit(-1);
   }
 }

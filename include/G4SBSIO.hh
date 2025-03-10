@@ -18,6 +18,7 @@
 #include "G4SBSNeuArmTOFoutput.hh"
 #include "G4SBSNeuArmVirtualoutput.hh"
 #include "G4SBSAVFFGenOutput.hh"
+#include "G4SBSAVFFGenBotOutput.hh"
 #include "G4SBSNCALoutput.hh"
 
 // for D Flay studies
@@ -170,6 +171,7 @@ public:
   void BranchNCal(G4String s); // for neutron arm HCal
   void BranchPythia();
   void BranchAVFFGen();
+  void BranchAVFFGenBot();
   void BranchSIMC();
   //void BranchSDTracks(G4String s);
   void BranchSDTracks();
@@ -192,6 +194,9 @@ public:
   void SetG4SBSAVFFGenOutput(G4SBSAVFFGenOutput p) { fAVFFGen = p; }
   void SetUseAVFFGen(G4bool b) { fUseAVFFGen = b; }
   void SetUseAVFFGun(G4bool b) { fUseAVFFGun = b; }
+
+  void SetG4SBSAVFFGenBotOutput(G4SBSAVFFGenBotOutput p) { fAVFFGenBot = p; }
+  void SetUseAVFFGenBot(G4bool b) { fUseAVFFGenBot = b; }
 
   void SetPythiaOutput( G4SBSPythiaOutput p ){ Primaries = p; }
   void SetUsePythia6( G4bool b ){ fUsePythia = b; }
@@ -314,8 +319,10 @@ private:
   G4SBSPythiaOutput Primaries;
 
   G4bool fUseAVFFGen;
+  G4bool fUseAVFFGenBot;
   G4bool fUseAVFFGun;
   G4SBSAVFFGenOutput fAVFFGen;
+  G4SBSAVFFGenBotOutput fAVFFGenBot;
 
   G4bool fUseSIMC;
   G4SBSSIMCOutput SIMCprimaries;

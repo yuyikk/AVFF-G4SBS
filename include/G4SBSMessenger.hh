@@ -73,6 +73,7 @@ private:
 
 
   G4UIcmdWithAString   *AVFFGenfileCmd;
+  G4UIcmdWithAString   *AVFFGenBOTfileCmd;
   G4UIcmdWithADoubleAndUnit *narmangCmd;
 
   G4UIcmdWithAnInteger *bigfieldCmd;

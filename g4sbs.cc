@@ -195,7 +195,8 @@ int main(int argc, char** argv)
   G4SBSMessenger *sbsmess = new G4SBSMessenger();
   sbsmess->SetIO(io);
 
-  G4VModularPhysicsList *physicslist = new G4SBSPhysicsList; 
+  G4VModularPhysicsList *physicslist = new G4SBSPhysicsList;
+  // physicslist->SetVerboseLevel(1);
   runManager->SetUserInitialization(physicslist);
 
   sbsmess->SetPhysList( (G4SBSPhysicsList*) physicslist );

@@ -1972,11 +1972,11 @@ void G4SBSHArmBuilder::MakeHCALV2(G4LogicalVolume *motherlog,
 
   // Absorber
   G4VisAttributes *vis_Absorb = new G4VisAttributes(G4Colour(1 - 0.83, 1 - 0.84, 1 - 0.85));
-  log_Absorb->SetVisAttributes(vis_Absorb);
-  log_ThinAbsorb->SetVisAttributes(vis_Absorb);
+  log_Absorb->SetVisAttributes(G4VisAttributes::GetInvisible());
+  log_ThinAbsorb->SetVisAttributes(G4VisAttributes::GetInvisible());
 
   // Scintillator and Mylar
-  G4VisAttributes *vis_Scint = new G4VisAttributes(G4Color::Cyan());
+  G4VisAttributes *vis_Scint = new G4VisAttributes(G4Color(0, 0.5, 0.5));
   log_Scint->SetVisAttributes(vis_Scint);
 
   // Wavelength Shifter & Rod

@@ -5219,7 +5219,7 @@ void G4SBSEArmBuilder::MakeLeadWall(G4LogicalVolume *motherlog)
 
   G4VisAttributes *VisAtt = new G4VisAttributes(G4Colour::Black());
   VisAtt->SetVisibility(true);
-  VisAtt->SetForceSolid(true);
+  // VisAtt->SetForceSolid(true);
   logicWall->SetVisAttributes(VisAtt);
 
 }

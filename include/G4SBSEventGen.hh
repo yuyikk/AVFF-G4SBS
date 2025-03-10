@@ -18,7 +18,9 @@
 #include "simc_tree.h"
 #include "Pythia6_tree.h"
 #include "G4SBSAVFFGenOutput.hh"
+#include "G4SBSAVFFGenBotOutput.hh"
 #include "AVFFGenTree.h"
+#include "AVFFGenBotTree.h"
 
 #define MAXMOMPT 1000 // N points for targets momentum distribution interpolations
 
@@ -148,6 +150,11 @@ public:
   TChain *GetAVFFGenChain() { return fAVFFGenChain; }
   void LoadAVFFGenChain(G4String fname);
 
+  void SetAVFFGenBotEvent(G4SBSAVFFGenBotOutput ev) { fAVFFGenBotEvent = ev; }
+  G4SBSAVFFGenBotOutput GetAVFFGenBotEvent() { return fAVFFGenBotEvent; }
+  TChain *GetAVFFGenBotChain() { return fAVFFGenBotChain; }
+  void LoadAVFFGenBotChain(G4String fname);
+
   Pythia6_tree *GetPythiaTree(){ return fPythiaTree; }
   TChain *GetPythiaChain(){ return fPythiaChain; }
 
@@ -182,6 +189,7 @@ public:
 
   void InitializePythia6_Tree();
   void InitializeAVFFGen_Tree();
+  void InitializeAVFFGenBot_Tree();
   void InitializeSIMC_Tree();
 
   int GetNfoils() const { return fNfoils; }
@@ -302,7 +310,7 @@ private:
   // The ACTUAL asymmetry that we generate for any given event (in terms of cross section)
   // will be diluted by the "effective polarization" of the proton and neutron in Helium-3.
   // If we have a vector-polarized deuterium target, we basically assume that deuteron vector
-  // polarization = proton + neutron polarization; i.e., both proton and neutron are polarized
+  // polarization = proton + neutron polarization; i.e., Both proton and neutron are polarized
   // to the same degree along the same direction (this is an approximation)
   
   //Define additional kinematic quantities for SIDIS:
@@ -385,6 +393,7 @@ private:
   bool GenerateCosmics(); //Generates muons from the top of the world geometry, directed towards a point in space
   bool GenerateSIMC(); //Generates primaries from a ROOT Tree containing PYTHIA6 events.
   bool GenerateAVFFGen(); //Generates particles from a ROOT Tree containing pre-defined generator event structure for AVFF
+  bool GenerateAVFFGenBot();//Generates particles from a ROOT Tree containing BOT-Generator generator event structure for AVFF
   // bool GenerateAVFFGun(); //Generates particles with geant4 build-in particle gun
   TVector3 GenerateUniformVertex(); // Generates uniform vertex distribution with in the AVFF LH2 target.
   // AJRP: June 5, 2021: calculate soffer bounds for transversity calculations:
@@ -440,10 +449,14 @@ private:
   TChain *fAVFFGenChain;
   AVFFGenTree *fAVFFEventGenTree;
 
+  TChain *fAVFFGenBotChain;
+  AVFFGenBotTree *fAVFFEventGenBotTree;
+
   map<G4String, G4double> fPythiaSigma;
   
   G4SBSPythiaOutput fPythiaEvent;
   G4SBSAVFFGenOutput fAVFFGenEvent;
+  G4SBSAVFFGenBotOutput fAVFFGenBotEvent;
 
   TChain *fSIMCChain;
   simc_tree *fSIMCTree;

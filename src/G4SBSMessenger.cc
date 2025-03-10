@@ -258,7 +258,7 @@ G4SBSMessenger::G4SBSMessenger()
   beamCollimatorZUpCmd->SetParameterName("beamCollimatorZ_upstr", true);
 
   kineCmd = new G4UIcmdWithAString("/g4sbs/kine", this);
-  kineCmd->SetGuidance("Kinematics from elastic, inelastic, flat, dis, beam, sidis, wiser, gun, pythia6, simc, wapp, avffgen, avffgun");
+  kineCmd->SetGuidance("Kinematics from elastic, inelastic, flat, dis, beam, sidis, wiser, gun, pythia6, simc, wapp, avffgen, avffgen_bot, avffgun");
   kineCmd->SetParameterName("kinetype", false);
 
   PYTHIAfileCmd = new G4UIcmdWithAString("/g4sbs/pythia6file", this);
@@ -268,6 +268,10 @@ G4SBSMessenger::G4SBSMessenger()
   AVFFGenfileCmd = new G4UIcmdWithAString("/g4sbs/avffgenfile", this);
   AVFFGenfileCmd->SetGuidance("Name of ROOT file containing generator events as a ROOT tree for AVFF experiment");
   AVFFGenfileCmd->SetParameterName("fname", false);
+
+  AVFFGenBOTfileCmd = new G4UIcmdWithAString("/g4sbs/avffgenbotfile", this);
+  AVFFGenBOTfileCmd->SetGuidance("Name of ROOT file containing bot-generator events as a ROOT tree for AVFF experiment");
+  AVFFGenBOTfileCmd->SetParameterName("fname", false);
 
   SIMCfileCmd = new G4UIcmdWithAString("/g4sbs/simcfile", this);
   SIMCfileCmd->SetGuidance("Name of ROOT file containing SIMC events as a ROOT tree");
@@ -688,6 +692,7 @@ G4SBSMessenger::G4SBSMessenger()
   GEPFPPoptionCmd->SetGuidance("2 = Two analyzers, 6 (FT) + 5 (FPP1) + 5 (FPP2) GEM trackers (default)");
   GEPFPPoptionCmd->SetGuidance("3 = Same as 2, but with second analyzer replaced by 3.5\" steel from GEN-RP");
   GEPFPPoptionCmd->SetGuidance("5 = No analyzer, 8 (FT) GEM trackers. This is the setup for AVFF experiment.");
+  GEPFPPoptionCmd->SetGuidance("6 = No analyzer, no GEM tracks. This is for AVFF experiment.");
   GEPFPPoptionCmd->SetParameterName("gepfppoption", true);
   GEPFPPoptionCmd->SetDefaultValue(2);
 
@@ -1059,6 +1064,14 @@ void G4SBSMessenger::SetNewValue(G4UIcommand *cmd, G4String newValue)
       nevt = std::min(long(nevt), lastevt_chain - firstevt + 1);
       fevgen->InitializeAVFFGen_Tree();
     }
+
+    if (fevgen->GetKine() == G4SBS::kAVFFGen_BOT)
+    {
+      long firstevt = fevgen->GetFirstEvent();
+      long lastevt_chain = fevgen->GetAVFFGenBotChain()->GetEntries() - 1;
+      nevt = std::min(long(nevt), lastevt_chain - firstevt + 1);
+      fevgen->InitializeAVFFGenBot_Tree();
+    }
     
     if (fevgen->GetKine() == G4SBS::kSIMC)
     {
@@ -1323,6 +1336,12 @@ void G4SBSMessenger::SetNewValue(G4UIcommand *cmd, G4String newValue)
       fIO->SetUseAVFFGen(true);
       validcmd = true;
     }
+    if (newValue.compareTo("avffgen_bot") == 0)
+    {
+      kinetemp = G4SBS::kAVFFGen_BOT;
+      fIO->SetUseAVFFGenBot(true);
+      validcmd = true;
+    }
     if (newValue.compareTo("avffgun") == 0)
     {
       kinetemp = G4SBS::kAVFFGun;
@@ -1382,6 +1401,10 @@ void G4SBSMessenger::SetNewValue(G4UIcommand *cmd, G4String newValue)
   if (cmd == AVFFGenfileCmd)
   {
     fevgen->LoadAVFFGenChain(newValue);
+  }
+  if (cmd == AVFFGenBOTfileCmd)
+  {
+    fevgen->LoadAVFFGenBotChain(newValue);
   }
   if (cmd == SIMCfileCmd)
   {

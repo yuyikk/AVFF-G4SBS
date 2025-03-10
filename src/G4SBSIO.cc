@@ -356,7 +356,10 @@ void G4SBSIO::InitializeTree()
   {
     BranchAVFFGen();
   }
-
+  if (fUseAVFFGenBot)
+  {
+    BranchAVFFGenBot();
+  }
   if (fUseSIMC)
   {
     BranchSIMC();
@@ -911,6 +914,18 @@ void G4SBSIO::BranchAVFFGen()
   fTree->Branch("GenPart.Px", &(fAVFFGen.fPx));
   fTree->Branch("GenPart.Py", &(fAVFFGen.fPy));
   fTree->Branch("GenPart.Pz", &(fAVFFGen.fPz));
+}
+
+void G4SBSIO::BranchAVFFGenBot()
+{
+  fTree->Branch("BotGen.Weight", &(fAVFFGenBot.fWeight), "GenPart.Weight/F");
+  fTree->Branch("BotGen.X", &(fAVFFGenBot.fHitX));
+  fTree->Branch("BotGen.Y", &(fAVFFGenBot.fHitY));
+  fTree->Branch("BotGen.Z", &(fAVFFGenBot.fHitZ));
+  fTree->Branch("BotGen.PDGID", &(fAVFFGenBot.fPdgID));
+  fTree->Branch("BotGen.Px", &(fAVFFGenBot.fPx));
+  fTree->Branch("BotGen.Py", &(fAVFFGenBot.fPy));
+  fTree->Branch("BotGen.Pz", &(fAVFFGenBot.fPz));
 }
 
 void G4SBSIO::BranchSIMC()

@@ -17,6 +17,7 @@
 #include "TVector3.h"
 
 #include "G4SBSAVFFGenOutput.hh"
+#include "G4SBSAVFFGenBotOutput.hh"
 #include "G4SBSAVFFConstants.hh"
 
 #include "G4PhysicalConstants.hh"
@@ -112,6 +113,32 @@ void G4SBSPrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
     }
     GenEvent.ConvertUnits();
     fIO->SetG4SBSAVFFGenOutput(GenEvent);
+    return;
+  }
+  if (sbsgen->GetKine() == G4SBS::kAVFFGen_BOT)
+  {
+    G4SBSAVFFGenBotOutput GenBotEvent = sbsgen->GetAVFFGenBotEvent();
+    for (int ipart = 0; ipart < GenBotEvent.fPdgID.size(); ++ipart)
+    {
+      particle = particleTable->FindParticle(GenBotEvent.fPdgID.at(ipart));
+      // particleGun->SetParticleDefinition(particle);
+      // particleGun->SetNumberOfParticles(1);
+      // G4double mass = particle->GetPDGMass();
+      G4ThreeVector p3(GenBotEvent.fPx.at(ipart),
+                       GenBotEvent.fPy.at(ipart), 
+                       GenBotEvent.fPz.at(ipart));
+      // G4double Ek = sqrt(p3.mag2() + mass * mass) - mass;
+      G4ThreeVector vertex(GenBotEvent.fHitX.at(ipart),
+                           GenBotEvent.fHitY.at(ipart),
+                           GenBotEvent.fHitZ.at(ipart));
+      G4double time = GenBotEvent.fTime.at(ipart);
+      G4PrimaryVertex *primaryVertex = new G4PrimaryVertex(vertex, time);
+      G4PrimaryParticle *primaryParticle = new G4PrimaryParticle(particle, p3.x(), p3.y(), p3.z());
+      primaryVertex->SetPrimary(primaryParticle);
+      anEvent->AddPrimaryVertex(primaryVertex);
+    }
+    GenBotEvent.ConvertUnits();
+    fIO->SetG4SBSAVFFGenBotOutput(GenBotEvent);
     return;
   }
 
@@ -530,7 +557,7 @@ void G4SBSPrimaryGeneratorAction::SetAVFFGun_Test()
 {
   G4ParticleTable *partTable = G4ParticleTable::GetParticleTable();
 
-  G4String partName = "proton";
+  G4String partName = "neutron";
   GunParticleType = partTable->FindParticle(partName);
 
   G4double mass = GunParticleType->GetPDGMass();
@@ -540,7 +567,7 @@ void G4SBSPrimaryGeneratorAction::SetAVFFGun_Test()
   G4ThreeVector pos(0, 0, 0);
   G4ThreeVector direction(0, 0, 1);
   direction.rotateY(48 * deg);
-  G4double KineticE = 5 * GeV - mass;
+  G4double KineticE = 1469.12 * MeV - mass;
   // G4cout << "KineticE: " << KineticE << G4endl;
   // KineticE = 80 * MeV;
   // KineticE = 1.6 * GeV;
