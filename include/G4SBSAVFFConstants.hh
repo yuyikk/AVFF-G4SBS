@@ -126,9 +126,9 @@ namespace MyLeadBlock
 }
 namespace MyLeadWall // neutron arm lead wall
 {
-    constexpr G4double kLength = 15 * m;
+    constexpr G4double kLength = 10 * m;
     constexpr G4double kWidth = 1 * m;
-    constexpr G4double kHeight = 9 * m;
+    constexpr G4double kHeight = 2.5 * m;
     
 }
 namespace MyHCal

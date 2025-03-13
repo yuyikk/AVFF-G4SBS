@@ -5204,22 +5204,22 @@ void G4SBSEArmBuilder::MakeLeadBlocks(G4LogicalVolume *motherlog)
 //
 void G4SBSEArmBuilder::MakeLeadWall(G4LogicalVolume *motherlog)
 {
-  G4double posZ = 9 * m;
-  G4double L = MyNeuArm::kSizeX / 2 + MyLeadWall::kWidth / 2 + 5 * cm;
-  L /= sin(fabs(fNArmAng));
-  G4double posX = (posZ - L) * tan(fabs(fNArmAng));
+  G4double posX = 2 * m;
   G4double posY = 0;
-  
+  G4double posZ = 8.7 * m;
+  // G4double L = MyNeuArm::kSizeX / 2 + MyLeadWall::kWidth / 2 + 5 * cm;
+  // L /= sin(fabs(fNArmAng));
+  G4double ang = 0 * deg;
   G4Box *solidWall = new G4Box("solidLeadWall", MyLeadWall::kWidth / 2., MyLeadWall::kHeight / 2., MyLeadWall::kLength / 2.);
   G4LogicalVolume *logicWall = new G4LogicalVolume(solidWall, GetMaterial("Lead"), "logicLeadWall");
   G4RotationMatrix *rot = new G4RotationMatrix();
-  rot->rotateY(fNArmAng);
+  rot->rotateY(ang);
   G4ThreeVector pos(posX, posY, posZ);
   new G4PVPlacement(rot, pos, logicWall, "physLeadWall", motherlog, false, 0, true);
 
   G4VisAttributes *VisAtt = new G4VisAttributes(G4Colour::Black());
   VisAtt->SetVisibility(true);
-  // VisAtt->SetForceSolid(true);
+  VisAtt->SetForceSolid(true);
   logicWall->SetVisAttributes(VisAtt);
 
 }
