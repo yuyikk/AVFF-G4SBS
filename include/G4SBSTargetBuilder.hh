@@ -63,8 +63,16 @@ public:
 
   // AVFF LH2 target (Added at Oct, 2024 by Yi Yu)
   void BuildAVFFTarget(G4LogicalVolume *motherLog);
+  void SetCollimatorSerrationAng(const G4double &val) { fSerrationAng = val; }
+  G4LogicalVolume *BuildAVFFCollimatorLayer(const G4double &tub_len,      // lengh in z of the layer
+                                            const G4double &tub_thick,    // thickness in r
+                                            const G4double &inner_radius, // inner radius
+                                            const G4double &serration_ang = 90 * CLHEP::deg,
+                                            const G4double &start_ang = 0,
+                                            const G4double &ang_span = CLHEP::twopi);
   void BuildAVFFCollimator(G4LogicalVolume *motherLog);
-  
+  void BuildAVFFCollimator2(G4LogicalVolume *motherLog);
+
   // test items 
   void BuildGEnTarget_IonChamber(G4LogicalVolume *motherLog);
   void BuildGEnTarget_BeamCollimator(G4LogicalVolume *motherLog,int type=0); // default is downstream  
@@ -132,6 +140,7 @@ private:
   std::vector<G4double> fFoilThick; //foil thickness
   std::vector<G4double> fFoilZpos; //foil Z position along beamline
 
+  G4double fSerrationAng; // angle for AVFF collimator
   G4double fTargLen;
   G4double fTargDen;
   G4double fTargDiameter; //diameter of cryotarget

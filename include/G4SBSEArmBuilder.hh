@@ -58,13 +58,20 @@ public:
   void MakeAVFFNMagnet2(G4LogicalVolume *);
   void MakeAVFFNCal(G4LogicalVolume *);
   void MakeLeadBlocks(G4LogicalVolume *);
+  G4LogicalVolume *MakeLeadBlockLayer(const G4double &block_len,
+                                      const G4double &block_thick,
+                                      const G4double &block_height,
+                                      const G4double &serration_ang);
+  void MakeLeadBlocks2(G4LogicalVolume *);
   void MakeLeadWall(G4LogicalVolume *);
   void SetNArmAngle(const double &val) { fNArmAng = val; }
   void SetNArmMagField(const G4ThreeVector &val) { fNMagField = val; }
+  void SetLeadBlockSerrationAng(const G4double &val) { fLeadBlockSerrationAng = val; }
   double fBBang;
   double fBBdist;
   double fBBCaldist;
   double fNArmAng;
+  G4double fLeadBlockSerrationAng;
   G4ThreeVector fNMagField;
 
   //G4SBSBigBiteField *fbbfield; //Why do we need this in both EArmBuilder and DetectorConstruction?

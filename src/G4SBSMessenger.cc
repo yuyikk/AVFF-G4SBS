@@ -461,6 +461,23 @@ G4SBSMessenger::G4SBSMessenger()
   narmangCmd->SetDefaultValue(-48);
   narmangCmd->SetDefaultUnit("deg");
 
+  serrationAngCmd = new G4UIcmdWithADoubleAndUnit("/g4sbs/collimator_serration_ang", this);
+  serrationAngCmd->SetGuidance("AVFF collimator serration angle");
+  serrationAngCmd->SetGuidance("default angle is 45 degree");
+  serrationAngCmd->SetGuidance("default unit is 'degree'");
+  serrationAngCmd->SetParameterName("angle", true);
+  serrationAngCmd->SetDefaultValue(45);
+  serrationAngCmd->SetDefaultUnit("deg");
+
+  serrationAngLeadBlockCmd = new G4UIcmdWithADoubleAndUnit("/g4sbs/leadblock_serration_ang", this);
+  serrationAngLeadBlockCmd->SetGuidance("AVFF target lead block serration angle");
+  serrationAngLeadBlockCmd->SetGuidance("default angle is 45 degree");
+  serrationAngLeadBlockCmd->SetGuidance("default unit is 'degree'");
+  serrationAngLeadBlockCmd->SetParameterName("leadblock_angle", true);
+  serrationAngLeadBlockCmd->SetDefaultValue(45);
+  serrationAngLeadBlockCmd->SetDefaultUnit("deg");
+
+
   nmagfieldCmd = new G4UIcmdWith3VectorAndUnit("/g4sbs/nmagfield", this);
   nmagfieldCmd->SetGuidance("Set magnetic field for neutron arm magnet for AVFF experiment");
   nmagfieldCmd->SetGuidance("Three-vector arguments are Bx, By, Bz;");
@@ -2153,6 +2170,19 @@ void G4SBSMessenger::SetNewValue(G4UIcommand *cmd, G4String newValue)
     G4double v = narmangCmd->GetNewDoubleValue(newValue);
     fdetcon->fEArmBuilder->SetNArmAngle(v);
   }
+
+  if (cmd == serrationAngCmd)
+  {
+    G4double v = serrationAngCmd->GetNewDoubleValue(newValue);
+    fdetcon->fTargetBuilder->SetCollimatorSerrationAng(v);
+  }
+
+  if (cmd == serrationAngLeadBlockCmd)
+  {
+    G4double v = serrationAngLeadBlockCmd->GetNewDoubleValue(newValue);
+    fdetcon->fEArmBuilder->SetLeadBlockSerrationAng(v);
+  }
+
   if (cmd == nmagfieldCmd)
   {
     G4ThreeVector v = nmagfieldCmd->GetNew3VectorValue(newValue);

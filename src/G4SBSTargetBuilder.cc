@@ -57,6 +57,7 @@ G4SBSTargetBuilder::G4SBSTargetBuilder(G4SBSDetectorConstruction *dc) : G4SBSCom
   fPlasticMaterial = G4String("CH2");
 
   fHadronFilterPerpendicular = false;
+  fSerrationAng = 45 * deg;
 
   if (fHadronFilterPerpendicular == true)
   {
@@ -116,7 +117,8 @@ void G4SBSTargetBuilder::BuildComponent(G4LogicalVolume *worldlog)
     break;
   case (G4SBS::kAxialFF):
     BuildAVFFTarget(worldlog);
-    BuildAVFFCollimator(worldlog);
+    // BuildAVFFCollimator(worldlog);
+    BuildAVFFCollimator2(worldlog);
     break;
   default: // GMN, GEN-RP, GEP_BB:
     BuildStandardScatCham(worldlog);
@@ -6985,8 +6987,8 @@ void G4SBSTargetBuilder::BuildAVFFCollimator(G4LogicalVolume *motherLog)
   G4RotationMatrix *rotation = new G4RotationMatrix();
   rotation->rotateX(180 * deg);
   // 10 cm long target is without collimation
-  // 5 cm for each collimator 
-  G4double DistToTargetZ =  coneHeight - 5 * cm - 0.5 * totallength; // the center of the tub solidCollimator
+  // 5 cm for each collimator
+  G4double DistToTargetZ = coneHeight - 5 * cm - 0.5 * totallength; // the center of the tub solidCollimator
   G4ThreeVector collPos = G4ThreeVector(MyTarget::kPosX, MyTarget::kPosY, MyTarget::kPosZ + DistToTargetZ);
   // now place the upstream collimator
   new G4PVPlacement(rotation, collPos, logicCollimator, "physCollimator", motherLog, false, 0, true);
@@ -7002,14 +7004,14 @@ void G4SBSTargetBuilder::BuildAVFFCollimator(G4LogicalVolume *motherLog)
   new G4PVPlacement(rotation, collPos2, logicCollimator2, "physCollimator2", motherLog, false, 0, true);
 
   // make and place the center collimator
-  // calculate the opening angle (in degree) of the center collimator 
+  // calculate the opening angle (in degree) of the center collimator
   // to the window of magnet field at neutron arm
   G4double openangle = std::atan(0.5 * MyMagnet2::kFieldSizeY / (MyMagnet2::kCtoTarget - MyTarget::kPosZ - MyMagnet2::kFieldSizeZ / 2.));
   G4Tubs *solidTubs1 = new G4Tubs("solidTubs1", MyCollimator::kInnerR, MyCollimator::kOuterR, 5 * cm, openangle, 90 * deg - openangle);
-  G4Tubs *solidTubs2 = new G4Tubs("solidTubs2", MyCollimator::kInnerR, MyCollimator::kOuterR, 5 * cm, -90 * deg, 90 * deg - openangle); 
+  G4Tubs *solidTubs2 = new G4Tubs("solidTubs2", MyCollimator::kInnerR, MyCollimator::kOuterR, 5 * cm, -90 * deg, 90 * deg - openangle);
   G4Cons *solidCons1 = new G4Cons("solidCons1", MyCollimator::kInnerR, MyCollimator::kInnerR, MyCollimator::kInnerR, MyCollimator::kOuterR, coneHeight / 2, openangle, 90 * deg - openangle);
   G4Cons *solidCons2 = new G4Cons("solidCons2", MyCollimator::kInnerR, MyCollimator::kInnerR, MyCollimator::kInnerR, MyCollimator::kOuterR, coneHeight / 2, -90 * deg, 90 * deg - openangle);
-  
+
   // now add tow tubs and two cons together
   G4UnionSolid *solidTubs_Union = new G4UnionSolid("solidTubs_Union", solidTubs1, solidTubs2);
   G4UnionSolid *solidCons_Union = new G4UnionSolid("solidCons_Union", solidCons1, solidCons2);
@@ -7035,4 +7037,86 @@ void G4SBSTargetBuilder::BuildAVFFCollimator(G4LogicalVolume *motherLog)
   logicCollimator3->SetVisAttributes(CollimatorVisAtt);
 }
 
+void G4SBSTargetBuilder::BuildAVFFCollimator2(G4LogicalVolume *motherLog)
+{
+  auto Tungsten = G4Material::GetMaterial("G4_W");
+  G4int nlayer = 5;
+  G4double layer_thick = 5 * cm;
+  G4double dL = -layer_thick / tan(48 * deg);
+  G4double L0 = 40 * cm;
+  G4double R0 = MyCollimator::kInnerR;
+  G4double shift1 = MyCollimator::kLength_wo_collimation / 2.;
+  G4double shift2 = fabs(layer_thick * tan(fSerrationAng - 90 * deg));
+  G4ThreeVector target_pos(MyTarget::kPosX, MyTarget::kPosY, MyTarget::kPosZ);
+  G4ThreeVector pos_ref(0, 0, L0 + shift1 - dL);
+  pos_ref -= target_pos;
+  G4double seration_ang = 48 * deg;
+  G4VisAttributes *layerVisAtt = new G4VisAttributes(G4Color::Gray());
+  layerVisAtt->SetForceSolid();
+  // build and place downstream collimator
+  for (int i = 0; i < nlayer; ++i)
+  {
+    G4double L = L0 + i * dL;
+    G4double R = R0 + i * layer_thick;
+    G4LogicalVolume *layer = BuildAVFFCollimatorLayer(L, layer_thick, R, fSerrationAng, -90 * deg, 180 * deg);
+    layer->SetMaterial(Tungsten);
+    G4ThreeVector layer_pos = pos_ref - G4ThreeVector(0, 0, 0.5 * L);
+    new G4PVPlacement(0, layer_pos, layer, "physLayer", motherLog, false, 0, true);
+    layer->SetVisAttributes(layerVisAtt);
+  }
+  // now build and place upstream collimator
+  L0 += (nlayer - 1) * dL;
+  G4ThreeVector pos_ref2(0, 0, -L0 - shift2 - shift1);
+  pos_ref2 -= target_pos;
+  for (int i = 0; i < nlayer; ++i)
+  {
+    G4double L = L0 - i * dL;
+    G4double R = R0 + i * layer_thick;
+    G4LogicalVolume *layer = BuildAVFFCollimatorLayer(L, layer_thick, R, 180 * deg - fSerrationAng , 90 * deg, 180 * deg);
+    layer->SetMaterial(Tungsten);
+    G4ThreeVector layer_pos = pos_ref2 + G4ThreeVector(0, 0, 0.5 * L);
+    G4RotationMatrix *rot = new G4RotationMatrix();
+    rot->rotateY(180 * deg);
+    new G4PVPlacement(rot, layer_pos, layer, "physLayer", motherLog, false, 0, true);
+    layer->SetVisAttributes(layerVisAtt);
+  }
+}
+
+G4LogicalVolume *G4SBSTargetBuilder::BuildAVFFCollimatorLayer(const G4double &tub_len,
+                                                              const G4double &tub_thick,
+                                                              const G4double &inner_radius, // inner radius
+                                                              const G4double &serration_ang,
+                                                              const G4double &start_ang,
+                                                              const G4double &ang_span)
+{
+
+  G4Tubs *tub = new G4Tubs("tub", inner_radius, inner_radius + tub_thick, 0.5 * tub_len, start_ang, ang_span);
+
+  G4LogicalVolume *logic_layer = 0;
+  G4SubtractionSolid *solid_sub = 0;
+  G4UnionSolid *solid_uni = 0;
+  if (serration_ang < 90 * deg)
+  {
+    G4double h = tub_thick / tan(serration_ang);
+    G4Cons *cons = new G4Cons("cons", inner_radius - 1 * mm, inner_radius + tub_thick, inner_radius - 1 * mm, inner_radius, 0.5 * h, start_ang - 0.1 * deg, ang_span + 0.2 * deg);
+    G4ThreeVector pos(0, 0, -0.5 * (tub_len - h) - 0.1 * mm);
+    solid_sub = new G4SubtractionSolid("solid_sub", tub, cons, nullptr, pos);
+    logic_layer = new G4LogicalVolume(solid_sub, G4Material::GetMaterial("G4_Galactic"), "logic_layer");
+  }
+  if (serration_ang == 90 * deg)
+  {
+    logic_layer = new G4LogicalVolume(tub, G4Material::GetMaterial("G4_Galactic"), "logic_layer");
+  }
+  if (serration_ang > 90 * deg)
+  {
+    G4double h = tub_thick * tan(serration_ang - 90 * deg);
+    G4Cons *cons = new G4Cons("cons", inner_radius, inner_radius, inner_radius, inner_radius + tub_thick, 0.5 * h, start_ang, ang_span);
+    // G4RotationMatrix *rot = new G4RotationMatrix();
+    // rot->rotateY(180 * deg);
+    G4ThreeVector pos(0, 0, -0.5 * (tub_len + h));
+    solid_uni = new G4UnionSolid("solid_uni", tub, cons, nullptr, pos);
+    logic_layer = new G4LogicalVolume(solid_uni, G4Material::GetMaterial("G4_Galactic"), "logic_layer");
+  }
+  return logic_layer;
+}
 // void G4SBSTargetBuilder::BuildHadronFilterGEp(

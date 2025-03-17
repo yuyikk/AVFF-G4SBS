@@ -47,6 +47,9 @@ namespace MyCollimator
     constexpr G4double kOuterR = kInnerR + kThickness;
     constexpr G4double kConeAngle = 96 * deg;
     constexpr G4double kLength = 20 * cm;
+    constexpr G4double kLength_wo_collimation = 15 * cm;
+    constexpr G4int kNofCollimatorLayer = 5;
+    constexpr G4double kLayerThickness = 5 * cm;
 }
 namespace MyNeuArm // the arm for hadron detection
 {

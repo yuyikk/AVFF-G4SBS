@@ -75,6 +75,8 @@ private:
   G4UIcmdWithAString   *AVFFGenfileCmd;
   G4UIcmdWithAString   *AVFFGenBOTfileCmd;
   G4UIcmdWithADoubleAndUnit *narmangCmd;
+  G4UIcmdWithADoubleAndUnit *serrationAngCmd;
+  G4UIcmdWithADoubleAndUnit *serrationAngLeadBlockCmd;
 
   G4UIcmdWithAnInteger *bigfieldCmd;
   G4UIcommand *bbfieldCmd;

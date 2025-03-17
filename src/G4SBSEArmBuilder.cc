@@ -65,6 +65,7 @@ G4SBSEArmBuilder::G4SBSEArmBuilder(G4SBSDetectorConstruction *dc) : G4SBSCompone
   fBBdist = 1.5 * m;
   fNArmAng = -48 * deg;
   fNMagField = G4ThreeVector(0, 0.5 * tesla, 0);
+  fLeadBlockSerrationAng = 45 * deg;
   // fNMagField = G4ThreeVector(0, 0, 0);
   /*
   G4double frontGEM_depth = 20.*cm;
@@ -168,7 +169,8 @@ void G4SBSEArmBuilder::BuildComponent(G4LogicalVolume *worldlog)
   }
   if (exptype == G4SBS::kAxialFF)
   {
-    MakeLeadBlocks(worldlog);
+    // MakeLeadBlocks(worldlog);
+    MakeLeadBlocks2(worldlog);
     MakeAVFFNArm(worldlog);
     MakeLeadWall(worldlog);
   }
@@ -4772,7 +4774,6 @@ void G4SBSEArmBuilder::MakeAVFFTOF(G4LogicalVolume *motherlog)
     logicVrt2->SetSensitiveDetector(sdVrt);
   }
 
-  
   G4String sdName_tof = "TOF";
   G4String collName_tof = "NeuArmTOFColl";
   if (!((G4SBSNeuArmTOFSD *)sdman->FindSensitiveDetector(sdName_tof)))
@@ -5201,6 +5202,92 @@ void G4SBSEArmBuilder::MakeLeadBlocks(G4LogicalVolume *motherlog)
   logicTrapezoid2->SetVisAttributes(VisAtt);
 }
 
+void G4SBSEArmBuilder::MakeLeadBlocks2(G4LogicalVolume *motherlog)
+{
+  G4double x1 = -0.5 * MyMagnet2::kFieldSizeX;
+  G4double z1 = MyMagnet2::kCtoTarget - MyTarget::kPosZ - 0.5 * MyMagnet2::kFieldSizeZ;
+
+  G4double shift1 = MyCollimator::kLength_wo_collimation / 2.;
+  G4double CollimationThickness = MyCollimator::kNofCollimatorLayer * MyCollimator::kLayerThickness;
+  G4double x2 = MyCollimator::kInnerR + CollimationThickness;
+  G4double z2 = shift1 + CollimationThickness / tan(-fNArmAng);
+
+  G4double x3 = 0.5 * MyMagnet2::kFieldSizeX;
+  G4double z3 = z1;
+
+  G4double x4 = x2;
+  G4double z4 = z2 - 2 * shift1;
+  G4ThreeVector vec1(x1, 0, z1);
+  vec1.rotateY(-fNArmAng);
+  G4ThreeVector vec2(x2, 0, z2);
+  G4ThreeVector vec3(x3, 0, z3);
+  vec3.rotateY(-fNArmAng);
+  G4ThreeVector vec4(x4, 0, z4);
+
+  G4ThreeVector d_vec = vec1 - vec2;
+  G4double theta1 = d_vec.theta();
+
+  G4VisAttributes *layerVisAtt = new G4VisAttributes(G4Color::Black());
+  layerVisAtt->SetForceSolid();
+  G4double block_thick = 10 * cm;
+  G4double dL = block_thick / tan(theta1);
+  G4double serration_ang = fLeadBlockSerrationAng;
+  G4double L_max = 100 * cm;
+  G4double block_pos_z = block_thick / tan(theta1) + block_thick / tan(serration_ang) + z2 + L_max;
+  for (int i = 0; i < 9; ++i)
+  {
+    G4double L = L_max - i * dL;
+    G4LogicalVolume *logicLeadBlock = MakeLeadBlockLayer(L, block_thick, MyLeadBlock::kHeight, serration_ang);
+    G4ThreeVector block_pos(x2 + i * block_thick, 0, block_pos_z);
+    G4RotationMatrix *block_rot = new G4RotationMatrix();
+    block_rot->rotateX(90 * deg);
+    new G4PVPlacement(block_rot, block_pos, logicLeadBlock, "physLeadBlock", motherlog, false, 0, true);
+    logicLeadBlock->SetVisAttributes(layerVisAtt);
+  }
+  d_vec = vec3 - vec4;
+  G4double theta2 = d_vec.theta();
+  dL = block_thick / tan(theta2);
+  L_max -= 4 * dL;
+  block_pos_z = z4 - L_max;
+  for (int i = 0; i < 14; ++i)
+  {
+    G4double L = L_max + i * dL;
+    G4LogicalVolume *logicLeadBlock = MakeLeadBlockLayer(L, block_thick, MyLeadBlock::kHeight, 180 * deg - serration_ang);
+    G4ThreeVector block_pos(x2 + i * block_thick, 0, block_pos_z);
+    G4RotationMatrix *block_rot = new G4RotationMatrix();
+    block_rot->rotateX(-90 * deg);
+    new G4PVPlacement(block_rot, block_pos, logicLeadBlock, "physLeadBlock", motherlog, false, 0, true);
+    logicLeadBlock->SetVisAttributes(layerVisAtt);
+  }
+}
+
+G4LogicalVolume *G4SBSEArmBuilder::MakeLeadBlockLayer(const G4double &block_len,
+                                                      const G4double &block_thick,
+                                                      const G4double &block_height,
+                                                      const G4double &serration_ang)
+{
+  auto Lead = GetMaterial("Lead");
+  G4double block_len2 = 0;
+  if (serration_ang == 90 * deg)
+  {
+    block_len2 = block_len;
+  }
+  else
+  {
+    block_len2 = block_len + block_thick / tan(serration_ang);
+  }
+  std::vector<G4TwoVector> polygon1;
+  polygon1.emplace_back(0.0 * cm, 0.0 * cm);      // bottom-left corner
+  polygon1.emplace_back(0.0 * cm, block_len);     // bottom-right corner
+  polygon1.emplace_back(block_thick, block_len2); // top-right corner
+  polygon1.emplace_back(block_thick, 0 * cm);     // top-left corner
+
+  G4ExtrudedSolid *trapezoid = new G4ExtrudedSolid("Trapezoid", polygon1,
+                                                   block_height / 2., G4TwoVector(0, 0), 1.0, G4TwoVector(0, 0), 1.0);
+  G4LogicalVolume *logicTrapezoid = new G4LogicalVolume(trapezoid, Lead, "logicTrapezoid");
+
+  return logicTrapezoid;
+}
 //
 void G4SBSEArmBuilder::MakeLeadWall(G4LogicalVolume *motherlog)
 {
@@ -5221,5 +5308,4 @@ void G4SBSEArmBuilder::MakeLeadWall(G4LogicalVolume *motherlog)
   VisAtt->SetVisibility(true);
   VisAtt->SetForceSolid(true);
   logicWall->SetVisAttributes(VisAtt);
-
 }
