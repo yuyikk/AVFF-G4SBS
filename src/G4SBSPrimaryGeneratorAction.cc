@@ -132,10 +132,16 @@ void G4SBSPrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
                            GenBotEvent.fHitY.at(ipart),
                            GenBotEvent.fHitZ.at(ipart));
       G4double time = GenBotEvent.fTime.at(ipart);
-      G4PrimaryVertex *primaryVertex = new G4PrimaryVertex(vertex, time);
-      G4PrimaryParticle *primaryParticle = new G4PrimaryParticle(particle, p3.x(), p3.y(), p3.z());
-      primaryVertex->SetPrimary(primaryParticle);
-      anEvent->AddPrimaryVertex(primaryVertex);
+      G4int nRot = 4;
+      for (int rot = 0; rot < nRot; ++rot)
+      {
+        G4PrimaryVertex *primaryVertex = new G4PrimaryVertex(vertex, time);
+        G4PrimaryParticle *primaryParticle = new G4PrimaryParticle(particle, p3.x(), p3.y(), p3.z());
+        primaryVertex->SetPrimary(primaryParticle);
+        anEvent->AddPrimaryVertex(primaryVertex);
+        p3.rotateZ(90 * deg);
+        vertex.rotateZ(90 * deg);
+      }
     }
     GenBotEvent.ConvertUnits();
     fIO->SetG4SBSAVFFGenBotOutput(GenBotEvent);
