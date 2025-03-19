@@ -133,7 +133,7 @@ void G4SBSPrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
                            GenBotEvent.fHitZ.at(ipart));
       G4double time = GenBotEvent.fTime.at(ipart);
 
-      G4cout << "bot-rotation angle: " << fBOTGenRotAngle / deg << " deg." << G4endl;
+      // G4cout << "bot-rotation angle: " << fBOTGenRotAngle / deg << " deg." << G4endl;
       p3.rotateZ(fBOTGenRotAngle);
       vertex.rotateZ(fBOTGenRotAngle);
 
