@@ -461,6 +461,14 @@ G4SBSMessenger::G4SBSMessenger()
   narmangCmd->SetDefaultValue(-48);
   narmangCmd->SetDefaultUnit("deg");
 
+  botgenrotAngCmd = new G4UIcmdWithADoubleAndUnit("/g4sbs/botgen_rotang", this);
+  botgenrotAngCmd->SetGuidance("particle rotation angle around z-axis for reading bot-generator files");
+  botgenrotAngCmd->SetGuidance("default angle is 0 degree");
+  botgenrotAngCmd->SetGuidance("default unit is 'degree'");
+  botgenrotAngCmd->SetParameterName("angle", true);
+  botgenrotAngCmd->SetDefaultValue(0);
+  botgenrotAngCmd->SetDefaultUnit("deg");
+
   serrationAngCmd = new G4UIcmdWithADoubleAndUnit("/g4sbs/collimator_serration_ang", this);
   serrationAngCmd->SetGuidance("AVFF collimator serration angle");
   serrationAngCmd->SetGuidance("default angle is 45 degree");
@@ -2182,7 +2190,11 @@ void G4SBSMessenger::SetNewValue(G4UIcommand *cmd, G4String newValue)
     G4double v = serrationAngLeadBlockCmd->GetNewDoubleValue(newValue);
     fdetcon->fEArmBuilder->SetLeadBlockSerrationAng(v);
   }
-
+  if (cmd == botgenrotAngCmd)
+  {
+    G4double v = botgenrotAngCmd->GetNewDoubleValue(newValue);
+    fprigen->SetBOTGenRotAngle(v);
+  }
   if (cmd == nmagfieldCmd)
   {
     G4ThreeVector v = nmagfieldCmd->GetNew3VectorValue(newValue);

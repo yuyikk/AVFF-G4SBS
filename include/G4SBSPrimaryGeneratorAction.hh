@@ -37,6 +37,7 @@ public:
   void SetGunPolarization( G4ThreeVector S ){ GunPolarization = S; }
   void SetAVFFGun();
   void SetAVFFGun_Test();
+  void SetBOTGenRotAngle(const G4double &angle ){ fBOTGenRotAngle = angle; }
 
 private:
   G4ParticleGun* particleGun;
@@ -45,7 +46,8 @@ private:
   G4SBSEventGen* sbsgen;
   G4SBSRunAction *RunAction;
   G4SBSIO *fIO;
- 
+  G4double fBOTGenRotAngle;
+
   G4ThreeVector GunPolarization;
 
   bool fUseGeantino;

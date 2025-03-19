@@ -48,7 +48,7 @@ G4SBSPrimaryGeneratorAction::G4SBSPrimaryGeneratorAction()
   GunPolarization = G4ThreeVector(0, 0, 0);
 
   sbsgen = new G4SBSEventGen();
-
+  fBOTGenRotAngle = 0 * deg;
   fUseGeantino = false;
 }
 
@@ -125,23 +125,22 @@ void G4SBSPrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
       // particleGun->SetNumberOfParticles(1);
       // G4double mass = particle->GetPDGMass();
       G4ThreeVector p3(GenBotEvent.fPx.at(ipart),
-                       GenBotEvent.fPy.at(ipart), 
+                       GenBotEvent.fPy.at(ipart),
                        GenBotEvent.fPz.at(ipart));
       // G4double Ek = sqrt(p3.mag2() + mass * mass) - mass;
       G4ThreeVector vertex(GenBotEvent.fHitX.at(ipart),
                            GenBotEvent.fHitY.at(ipart),
                            GenBotEvent.fHitZ.at(ipart));
       G4double time = GenBotEvent.fTime.at(ipart);
-      G4int nRot = 4;
-      for (int rot = 0; rot < nRot; ++rot)
-      {
-        G4PrimaryVertex *primaryVertex = new G4PrimaryVertex(vertex, time);
-        G4PrimaryParticle *primaryParticle = new G4PrimaryParticle(particle, p3.x(), p3.y(), p3.z());
-        primaryVertex->SetPrimary(primaryParticle);
-        anEvent->AddPrimaryVertex(primaryVertex);
-        p3.rotateZ(90 * deg);
-        vertex.rotateZ(90 * deg);
-      }
+
+      G4cout << "bot-rotation angle: " << fBOTGenRotAngle / deg << " deg." << G4endl;
+      p3.rotateZ(fBOTGenRotAngle);
+      vertex.rotateZ(fBOTGenRotAngle);
+
+      G4PrimaryVertex *primaryVertex = new G4PrimaryVertex(vertex, time);
+      G4PrimaryParticle *primaryParticle = new G4PrimaryParticle(particle, p3.x(), p3.y(), p3.z());
+      primaryVertex->SetPrimary(primaryParticle);
+      anEvent->AddPrimaryVertex(primaryVertex);
     }
     GenBotEvent.ConvertUnits();
     fIO->SetG4SBSAVFFGenBotOutput(GenBotEvent);

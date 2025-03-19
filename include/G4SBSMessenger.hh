@@ -77,6 +77,7 @@ private:
   G4UIcmdWithADoubleAndUnit *narmangCmd;
   G4UIcmdWithADoubleAndUnit *serrationAngCmd;
   G4UIcmdWithADoubleAndUnit *serrationAngLeadBlockCmd;
+  G4UIcmdWithADoubleAndUnit *botgenrotAngCmd;
 
   G4UIcmdWithAnInteger *bigfieldCmd;
   G4UIcommand *bbfieldCmd;
