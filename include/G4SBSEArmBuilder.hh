@@ -67,11 +67,13 @@ public:
   void SetNArmAngle(const double &val) { fNArmAng = val; }
   void SetNArmMagField(const G4ThreeVector &val) { fNMagField = val; }
   void SetLeadBlockSerrationAng(const G4double &val) { fLeadBlockSerrationAng = val; }
+  void SetUseZigZagShape(const G4bool &val) { fUseZigZagLeadBlocks = val; }
   double fBBang;
   double fBBdist;
   double fBBCaldist;
   double fNArmAng;
   G4double fLeadBlockSerrationAng;
+  G4bool fUseZigZagLeadBlocks;
   G4ThreeVector fNMagField;
 
   //G4SBSBigBiteField *fbbfield; //Why do we need this in both EArmBuilder and DetectorConstruction?

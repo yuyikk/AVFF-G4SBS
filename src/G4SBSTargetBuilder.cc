@@ -6938,10 +6938,10 @@ void G4SBSTargetBuilder::BuildHadronFilter2(G4LogicalVolume *mother, G4RotationM
 
 void G4SBSTargetBuilder::BuildAVFFTarget(G4LogicalVolume *motherlog)
 {
-  const G4double RContainer = 2.54 * cm;
+  const G4double RContainer = MyTarget::kRadiusContainer;
   const G4double RTarget = RContainer - 0.25 * mm;
-  const G4double LenTarget = 20 * cm;
-  const G4double LenContainer = LenTarget + 0.3 * mm;
+  const G4double LenTarget = MyTarget::kLengthTarget;
+  const G4double LenContainer = MyTarget::kLengthContainer;
   const G4ThreeVector PosTarget(0, 0, 0);
 
   const G4double RChamber = RContainer + 1 * mm;
@@ -7040,13 +7040,13 @@ void G4SBSTargetBuilder::BuildAVFFCollimator(G4LogicalVolume *motherLog)
 void G4SBSTargetBuilder::BuildAVFFCollimator2(G4LogicalVolume *motherLog)
 {
   auto Tungsten = G4Material::GetMaterial("G4_W");
-  G4int nlayer = 5;
+  G4int nlayer = MyCollimator::kNofCollimatorLayer;
   G4double layer_thick = 5 * cm;
   G4double dL = -layer_thick / tan(48 * deg);
-  G4double L0 = 40 * cm;
+  G4double L0 = 70 * cm;
   G4double R0 = MyCollimator::kInnerR;
   G4double shift1 = MyCollimator::kLength_wo_collimation / 2.;
-  G4double shift2 = fabs(layer_thick * tan(fSerrationAng - 90 * deg));
+  
   G4ThreeVector target_pos(MyTarget::kPosX, MyTarget::kPosY, MyTarget::kPosZ);
   G4ThreeVector pos_ref(0, 0, L0 + shift1 - dL);
   pos_ref -= target_pos;
@@ -7066,7 +7066,8 @@ void G4SBSTargetBuilder::BuildAVFFCollimator2(G4LogicalVolume *motherLog)
   }
   // now build and place upstream collimator
   L0 += (nlayer - 1) * dL;
-  G4ThreeVector pos_ref2(0, 0, -L0 - shift2 - shift1);
+  G4double shift2 = fabs(layer_thick / tan(180 * deg - fSerrationAng));
+  G4ThreeVector pos_ref2(0, 0, -L0 + shift2 - shift1);
   pos_ref2 -= target_pos;
   for (int i = 0; i < nlayer; ++i)
   {

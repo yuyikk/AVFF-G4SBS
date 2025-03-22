@@ -66,6 +66,7 @@ G4SBSEArmBuilder::G4SBSEArmBuilder(G4SBSDetectorConstruction *dc) : G4SBSCompone
   fNArmAng = -48 * deg;
   fNMagField = G4ThreeVector(0, 0.5 * tesla, 0);
   fLeadBlockSerrationAng = 45 * deg;
+  fUseZigZagLeadBlocks = true;
   // fNMagField = G4ThreeVector(0, 0, 0);
   /*
   G4double frontGEM_depth = 20.*cm;
@@ -5232,32 +5233,44 @@ void G4SBSEArmBuilder::MakeLeadBlocks2(G4LogicalVolume *motherlog)
   G4double block_thick = 10 * cm;
   G4double dL = block_thick / tan(theta1);
   G4double serration_ang = fLeadBlockSerrationAng;
+  fUseZigZagLeadBlocks ? serration_ang = fLeadBlockSerrationAng : serration_ang = 180 * deg - theta1;
   G4double L_max = 100 * cm;
   G4double block_pos_z = block_thick / tan(theta1) + block_thick / tan(serration_ang) + z2 + L_max;
-  for (int i = 0; i < 9; ++i)
+  G4int nlayer1 = d_vec.x() / block_thick;
+  for (int i = 0; i < nlayer1; ++i)
   {
     G4double L = L_max - i * dL;
     G4LogicalVolume *logicLeadBlock = MakeLeadBlockLayer(L, block_thick, MyLeadBlock::kHeight, serration_ang);
     G4ThreeVector block_pos(x2 + i * block_thick, 0, block_pos_z);
     G4RotationMatrix *block_rot = new G4RotationMatrix();
     block_rot->rotateX(90 * deg);
-    new G4PVPlacement(block_rot, block_pos, logicLeadBlock, "physLeadBlock", motherlog, false, 0, true);
-    logicLeadBlock->SetVisAttributes(layerVisAtt);
+    if (logicLeadBlock)
+    {
+      new G4PVPlacement(block_rot, block_pos, logicLeadBlock, "physLeadBlock", motherlog, false, 0, true);
+      logicLeadBlock->SetVisAttributes(layerVisAtt);
+    }
   }
   d_vec = vec3 - vec4;
   G4double theta2 = d_vec.theta();
+ 
+  G4int nlayer2 = d_vec.x() / block_thick;
   dL = block_thick / tan(theta2);
-  L_max -= 4 * dL;
-  block_pos_z = z4 - L_max;
-  for (int i = 0; i < 14; ++i)
+  L_max -= (nlayer2 - 1) * dL;
+  L_max += 30 * cm;
+  block_pos_z = z4 - L_max + dL;
+  fUseZigZagLeadBlocks ? serration_ang = fLeadBlockSerrationAng : serration_ang = 180 * deg - theta2;
+  for (int i = 0; i < nlayer2; ++i)
   {
     G4double L = L_max + i * dL;
     G4LogicalVolume *logicLeadBlock = MakeLeadBlockLayer(L, block_thick, MyLeadBlock::kHeight, 180 * deg - serration_ang);
     G4ThreeVector block_pos(x2 + i * block_thick, 0, block_pos_z);
     G4RotationMatrix *block_rot = new G4RotationMatrix();
     block_rot->rotateX(-90 * deg);
-    new G4PVPlacement(block_rot, block_pos, logicLeadBlock, "physLeadBlock", motherlog, false, 0, true);
-    logicLeadBlock->SetVisAttributes(layerVisAtt);
+    if (logicLeadBlock)
+    {
+      new G4PVPlacement(block_rot, block_pos, logicLeadBlock, "physLeadBlock", motherlog, false, 0, true);
+      logicLeadBlock->SetVisAttributes(layerVisAtt);
+    }
   }
 }
 
@@ -5266,7 +5279,6 @@ G4LogicalVolume *G4SBSEArmBuilder::MakeLeadBlockLayer(const G4double &block_len,
                                                       const G4double &block_height,
                                                       const G4double &serration_ang)
 {
-  auto Lead = GetMaterial("Lead");
   G4double block_len2 = 0;
   if (serration_ang == 90 * deg)
   {
@@ -5281,10 +5293,13 @@ G4LogicalVolume *G4SBSEArmBuilder::MakeLeadBlockLayer(const G4double &block_len,
   polygon1.emplace_back(0.0 * cm, block_len);     // bottom-right corner
   polygon1.emplace_back(block_thick, block_len2); // top-right corner
   polygon1.emplace_back(block_thick, 0 * cm);     // top-left corner
-
-  G4ExtrudedSolid *trapezoid = new G4ExtrudedSolid("Trapezoid", polygon1,
-                                                   block_height / 2., G4TwoVector(0, 0), 1.0, G4TwoVector(0, 0), 1.0);
-  G4LogicalVolume *logicTrapezoid = new G4LogicalVolume(trapezoid, Lead, "logicTrapezoid");
+  G4LogicalVolume *logicTrapezoid = 0;
+  if (block_len > 0 && block_len2 > 0)
+  {
+    G4ExtrudedSolid *trapezoid = new G4ExtrudedSolid("Trapezoid", polygon1,
+                                                     block_height / 2., G4TwoVector(0, 0), 1.0, G4TwoVector(0, 0), 1.0);
+    logicTrapezoid = new G4LogicalVolume(trapezoid, GetMaterial("G4_W"), "logicTrapezoid");
+  }
 
   return logicTrapezoid;
 }

@@ -485,6 +485,12 @@ G4SBSMessenger::G4SBSMessenger()
   serrationAngLeadBlockCmd->SetDefaultValue(45);
   serrationAngLeadBlockCmd->SetDefaultUnit("deg");
 
+  zigzagLeadBlockCmd = new G4UIcmdWithABool("/g4sbs/use_zigzag_leadblock", this);
+  zigzagLeadBlockCmd->SetGuidance("control to use zigzag lead block or not");
+  zigzagLeadBlockCmd->SetGuidance("default value is true");
+  zigzagLeadBlockCmd->SetParameterName("usezigzag", true);
+  zigzagLeadBlockCmd->SetDefaultValue(true);
+
 
   nmagfieldCmd = new G4UIcmdWith3VectorAndUnit("/g4sbs/nmagfield", this);
   nmagfieldCmd->SetGuidance("Set magnetic field for neutron arm magnet for AVFF experiment");
@@ -2189,6 +2195,11 @@ void G4SBSMessenger::SetNewValue(G4UIcommand *cmd, G4String newValue)
   {
     G4double v = serrationAngLeadBlockCmd->GetNewDoubleValue(newValue);
     fdetcon->fEArmBuilder->SetLeadBlockSerrationAng(v);
+  }
+  if (cmd == zigzagLeadBlockCmd)
+  {
+    G4bool v = zigzagLeadBlockCmd->GetNewBoolValue(newValue);
+    fdetcon->fEArmBuilder->SetUseZigZagShape(v);
   }
   if (cmd == botgenrotAngCmd)
   {
